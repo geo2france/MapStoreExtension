@@ -36,7 +36,17 @@ ConfigUtils.setConfigProp('themePrefix', 'MapStoreExtension');
  *     }]
  * };
  */
-const appConfig = require('@mapstore/product/appConfig').default;
+// const appConfig = require('@mapstore/product/appConfig').default;
+
+ConfigUtils.setLocalConfigurationFile('configs/localConfig.json');
+const appConfig = {
+    ...require('@mapstore/product/appConfig').default,
+    pages: [{
+        name: "mapviewer",
+        path: "/",
+        component: require('@mapstore/product/pages/MapViewer').default
+    }]
+};
 
 /**
  * Define a custom list of plugins with:
