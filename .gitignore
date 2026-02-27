@@ -10,3 +10,8 @@ web/.project
 backend/.classpath
 backend/.project
 assets/index.json.tmp
+# georchestra docs
+venv*
+.venv/*
+docs_modules/
+docs/tableofcontent.md

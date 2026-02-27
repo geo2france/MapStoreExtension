@@ -1,10 +1,10 @@
 {
   "plugins": [
     {
-      "name": "SampleExtension",
+      "name": "panel-editor",
       "version": "@@VERSION@@",
       "dependencies": [
-        "Toolbar"
+        "SidebarMenu"
       ]
     }
   ]
