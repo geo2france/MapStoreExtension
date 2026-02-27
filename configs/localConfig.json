@@ -2,25 +2,7 @@
   "proxyUrl": {
     "url": "proxy/?url=",
     "useCORS": [
-      "http://demo.geo-solutions.it/geoserver",
-      "https://demo.geo-solutions.it:443/geoserver",
-      "https://demo.geo-solutions.it/geoserver",
-      "https://nominatim.openstreetmap.org",
-      "http://cloudsdi.geo-solutions.it",
-      "https://gs-stable.geo-solutions.it/geoserver",
-      "https://gs-stable.geo-solutions.it:443/geoserver",
-      "http://gs-stable.geo-solutions.it/geoserver",
-      "http://gs-stable.geo-solutions.it:443/geoserver",
-      "https://gs-stable.geosolutionsgroup.com/geoserver",
-      "https://gs-stable.geosolutionsgroup.com:443/geoserver",
-      "http://gs-stable.geosolutionsgroup.com/geoserver",
-      "http://gs-stable.geosolutionsgroup.com:443/geoserver",
-      "https://tile.googleapis.com",
-      "https://maps1.geosolutionsgroup.com/geoserver/",
-      "https://maps2.geosolutionsgroup.com/geoserver/",
-      "https://maps3.geosolutionsgroup.com/geoserver/",
-      "https://maps4.geosolutionsgroup.com/geoserver/",
-      "https://maps5.geosolutionsgroup.com/geoserver/"
+      "http://localhost/geoserver"
     ]
   },
   "geoStoreUrl": "rest/geostore/",
@@ -110,23 +92,11 @@
           },
           "selectedService": "gs_stable_csw",
           "services": {
-            "gs_stable_csw": {
-              "url": "https://gs-stable.geo-solutions.it/geoserver/csw",
-              "type": "csw",
-              "title": "GeoSolutions GeoServer CSW",
-              "autoload": true
-            },
-            "gs_stable_wms": {
-              "url": "https://gs-stable.geo-solutions.it/geoserver/wms",
+            "gs_local": {
+              "url": "http://localhost/geoserver/csw",
               "type": "wms",
-              "title": "GeoSolutions GeoServer WMS",
-              "autoload": false
-            },
-            "gs_stable_wmts": {
-              "url": "https://gs-stable.geo-solutions.it/geoserver/gwc/service/wmts",
-              "type": "wmts",
-              "title": "GeoSolutions GeoServer WMTS",
-              "autoload": false
+              "title": "local gs",
+              "autoload": true
             }
           },
           "staticServices": {
@@ -438,7 +408,65 @@
       }
     ],
     "desktop": [
-      "SampleExtension",
+      {
+        "name": "panel-editor",
+        "cfg": {
+          "tooltip": "Projets avisés",
+          "icon": "map",
+          "title": "Projets avisés",
+          "geoserver": "http://localhost/geoserver",
+          "layers": {
+            "test:avisee_projets": {
+              "featureFieldLabel": "nom",
+              "restrictedAreaDeactivate": {
+                "url": "/console/account/areaofcompetence",
+                "operation": "INTERSECTS",
+                "wtk": "GEOMETRYCOLLECTION(POLYGON ((254824.49069202237 6252882.533909702, 254824.49069202237 6251476.2390494505, 256777.57646966795 6251476.2390494505, 256777.57646966795 6252882.533909702, 254824.49069202237 6252882.533909702)))"
+              },
+              "hidden": [
+                "id2",
+                "geom",
+                "log_date_crea",
+                "log_date_modi",
+                "log_user_crea",
+                "log_user_modi",
+                "id_avis"
+              ],
+              "auto": [
+                [
+                  "log_user_crea",
+                  "header",
+                  "sec.username"
+                ],
+                [
+                  "log_date_crea",
+                  "date",
+                  "DD/MM/YYYY"
+                ]
+              ],
+              "delete": [
+                "ADMIN"
+              ],
+              "fields": [
+                [
+                  "numero_identifiant",
+                  "Identifiant",
+                  "string",
+                  true,
+                  true
+                ],
+                [
+                  "nom",
+                  "Nom",
+                  "string",
+                  false,
+                  true
+                ]
+              ]
+            }
+          }
+        }
+      },
       "Details",
       {
         "name": "BrandNavbar",

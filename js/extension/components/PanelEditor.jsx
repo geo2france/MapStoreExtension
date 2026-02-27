@@ -1,11 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
 import ResponsivePanel from "@mapstore/components/misc/panels/ResponsivePanel";
-import { Alert, Button, ButtonGroup, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "react-bootstrap";
+import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "react-bootstrap";
 import { t } from "../utiles/i18n";
 import { canDeleteFeature, canEditField, canEditLayer } from "../utiles/permissions";
 import {
-    getLayerConfig,
+    getFeatureOptionLabel,
     getVisibleFieldNames,
     resolveFieldDefinition
 } from "../utiles/attributes";
@@ -13,7 +13,10 @@ import renderInputByType from "./formControls/renderInputByType";
 import SelectInputControl from "./formControls/SelectInputControl";
 import StaticValueControl from "./formControls/StaticValueControl";
 
+const PANEL_SIZE_EXTRA = 100;
+
 const PanelEditor = ({
+    layerConfig,
     enabled,
     onClose,
     dockStyle,
@@ -24,7 +27,6 @@ const PanelEditor = ({
     selectedResponseIndex,
     selectedFeatureIndex,
     selectedFeatures,
-    selectedLayerName,
     selectedFeature,
     selectedAttributes,
     editMode,
@@ -40,15 +42,15 @@ const PanelEditor = ({
     onSave,
     onDelete
 }) => {
-    const layerConfig = getLayerConfig(cfg, selectedLayerName) || {};
     const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
     const canEditCurrentLayer = canEditLayer(userRole, layerConfig);
     const canDeleteCurrentFeature = canDeleteFeature(userRole, layerConfig);
 
     const title = cfg?.title || t(locale, "panelTitle");
-    const size = Number.isFinite(cfg?.size) ? cfg.size : 420;
+    const baseSize = Number.isFinite(cfg?.size) ? cfg.size : 420;
+    const size = baseSize + PANEL_SIZE_EXTRA;
 
-    console.log(visibleFields);
+    console.log(layerConfig);
 
     return (
         <ResponsivePanel
@@ -73,130 +75,148 @@ const PanelEditor = ({
                 {!responseOptions.length ? (
                     <div className="panel-editor-empty-state">{t(locale, "emptyState")}</div>
                 ) : (
-                    <div>
-                        {responseOptions.length > 1 ? (
-                            <FormGroup>
-                                <ControlLabel>{t(locale, "layerLabel")}</ControlLabel>
-                                <SelectInputControl
-                                    value={selectedResponseIndex}
-                                    options={responseOptions}
-                                    onChange={(value) => onSelectResponse(Number(value))}
-                                />
-                            </FormGroup>
-                        ) : null}
+                    <div className="panel-editor-content">
+                        <div className="panel-editor-static-header">
+                            {responseOptions.length > 1 ? (
+                                <FormGroup>
+                                    <ControlLabel>{t(locale, "layerLabel")}</ControlLabel>
+                                    <SelectInputControl
+                                        value={selectedResponseIndex}
+                                        options={responseOptions}
+                                        onChange={(value) => onSelectResponse(Number(value))}
+                                    />
+                                </FormGroup>
+                            ) : null}
 
-                        {selectedFeatures.length > 1 ? (
-                            <FormGroup>
-                                <ControlLabel>{t(locale, "featureLabel")}</ControlLabel>
-                                <SelectInputControl
-                                    value={selectedFeatureIndex}
-                                    options={selectedFeatures.map((feature, index) => ({
-                                        value: index,
-                                        label: `${t(locale, "featureLabel")} ${index + 1}`,
-                                        key: feature?.id || index
-                                    }))}
-                                    onChange={(value) => onSelectFeature(Number(value))}
-                                />
-                            </FormGroup>
-                        ) : null}
+                            {selectedFeatures.length > 1 ? (
+                                <FormGroup>
+                                    <ControlLabel>{t(locale, "featureLabel")}</ControlLabel>
+                                    <SelectInputControl
+                                        value={selectedFeatureIndex}
+                                        options={selectedFeatures.map((feature, index) => ({
+                                            value: index,
+                                            label: getFeatureOptionLabel(feature, layerConfig, index),
+                                            key: feature?.id || index
+                                        }))}
+                                        onChange={(value) => onSelectFeature(Number(value))}
+                                    />
+                                </FormGroup>
+                            ) : null}
 
-                        <div className="panel-editor-mode-title">
-                            <strong>{editMode ? t(locale, "editModeTitle") : t(locale, "readModeTitle")}</strong>
+                            {editMode ? (
+                                <div className="panel-editor-mode-title">
+                                    <span className="label label-primary">{t(locale, "editModeTitle")}</span>
+                                </div>
+                            ) : null}
+                            <div className="panel-editor-toolbar">
+                                {!editMode ? (
+                                    <Button
+                                        bsStyle="primary"
+                                        disabled={!canEditCurrentLayer || !selectedFeature}
+                                        onClick={onStartEdit}
+                                        title={t(locale, "switchToEdit")}
+                                        aria-label={t(locale, "switchToEdit")}
+                                    >
+                                        <Glyphicon glyph="pencil" />
+                                    </Button>
+                                ) : (
+                                    <div className="panel-editor-actions">
+                                        <Button
+                                            bsStyle="success"
+                                            disabled={saveStatus === "saving"}
+                                            onClick={onSave}
+                                            title={t(locale, "save")}
+                                            aria-label={t(locale, "save")}
+                                        >
+                                            <Glyphicon glyph="floppy-disk" />
+                                        </Button>
+                                        <Button
+                                            disabled={saveStatus === "saving"}
+                                            onClick={onCancelEdit}
+                                            bsStyle="warning"
+                                            title={t(locale, "cancel")}
+                                            aria-label={t(locale, "cancel")}
+                                        >
+                                            <Glyphicon glyph="remove" />
+                                        </Button>
+                                        <Button
+                                            bsStyle="danger"
+                                            disabled={!canDeleteCurrentFeature || saveStatus === "saving"}
+                                            onClick={onDelete}
+                                            title={t(locale, "delete")}
+                                            aria-label={t(locale, "delete")}
+                                        >
+                                            <Glyphicon glyph="trash" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {!visibleFields.length ? (
-                            <div className="panel-editor-empty-state">{t(locale, "noAttributes")}</div>
-                        ) : null}
+                        <div className="panel-editor-scroll">
+                            {!visibleFields.length ? (
+                                <div className="panel-editor-empty-state">{t(locale, "noAttributes")}</div>
+                            ) : null}
 
-                        {!editMode && visibleFields.length ? (
-                            <table className="table table-striped panel-editor-attributes-table">
-                                <tbody>
+                            {!editMode && visibleFields.length ? (
+                                <table className="table table-striped panel-editor-attributes-table">
+                                    <tbody>
+                                        {visibleFields.map((fieldName) => {
+                                            const fieldDefinition = resolveFieldDefinition(
+                                                fieldName,
+                                                selectedAttributes[fieldName],
+                                                layerConfig
+                                            );
+                                            return (
+                                                <tr key={fieldName}>
+                                                    <th>{fieldDefinition.label}</th>
+                                                    <td>{String(selectedAttributes[fieldName] ?? "")}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            ) : null}
+
+                            {editMode && visibleFields.length ? (
+                                <div>
                                     {visibleFields.map((fieldName) => {
                                         const fieldDefinition = resolveFieldDefinition(
                                             fieldName,
                                             selectedAttributes[fieldName],
                                             layerConfig
                                         );
+                                        const fieldEditable = canEditField(
+                                            userRole,
+                                            fieldDefinition,
+                                            selectedAttributes[fieldName]
+                                        );
+                                        const fieldError = validationErrors[fieldName];
+                                        console.log(fieldEditable);
                                         return (
-                                            <tr key={fieldName}>
-                                                <th>{fieldDefinition.label}</th>
-                                                <td>{String(selectedAttributes[fieldName] ?? "")}</td>
-                                            </tr>
+                                            <FormGroup key={fieldName} validationState={fieldError ? "error" : null}>
+                                                <ControlLabel>
+                                                    {fieldDefinition.label}
+                                                    {fieldDefinition.required ? " *" : ""}
+                                                </ControlLabel>
+                                                {fieldEditable
+                                                    ? renderInputByType({
+                                                        type: fieldDefinition.type,
+                                                        value: formValues[fieldName],
+                                                        options: fieldDefinition.options,
+                                                        onChange: (value) => onUpdateField(fieldName, value)
+                                                    })
+                                                    : (
+                                                        <StaticValueControl
+                                                            value={formValues[fieldName] ?? selectedAttributes[fieldName] ?? ""}
+                                                        />
+                                                    )}
+                                                {fieldError ? <HelpBlock>{fieldError}</HelpBlock> : null}
+                                            </FormGroup>
                                         );
                                     })}
-                                </tbody>
-                            </table>
-                        ) : null}
-
-                        {editMode && visibleFields.length ? (
-                            <div>
-                                {visibleFields.map((fieldName) => {
-                                    const fieldDefinition = resolveFieldDefinition(
-                                        fieldName,
-                                        selectedAttributes[fieldName],
-                                        layerConfig
-                                    );
-                                    const fieldEditable = canEditField(userRole, fieldDefinition);
-                                    const fieldError = validationErrors[fieldName];
-                                    console.log(fieldEditable);
-                                    return (
-                                        <FormGroup key={fieldName} validationState={fieldError ? "error" : null}>
-                                            <ControlLabel>
-                                                {fieldDefinition.label}
-                                                {fieldDefinition.required ? " *" : ""}
-                                            </ControlLabel>
-                                            {fieldEditable
-                                                ? renderInputByType({
-                                                    type: fieldDefinition.type,
-                                                    value: formValues[fieldName],
-                                                    options: fieldDefinition.options,
-                                                    onChange: (value) => onUpdateField(fieldName, value)
-                                                })
-                                                : (
-                                                    <StaticValueControl
-                                                        value={formValues[fieldName] ?? selectedAttributes[fieldName] ?? ""}
-                                                    />
-                                                )}
-                                            {fieldError ? <HelpBlock>{fieldError}</HelpBlock> : null}
-                                        </FormGroup>
-                                    );
-                                })}
-                            </div>
-                        ) : null}
-
-                        <div className="panel-editor-toolbar">
-                            {!editMode ? (
-                                <Button
-                                    bsStyle="primary"
-                                    disabled={!canEditCurrentLayer || !selectedFeature}
-                                    onClick={onStartEdit}
-                                >
-                                    <Glyphicon glyph="pencil" /> {t(locale, "switchToEdit")}
-                                </Button>
-                            ) : (
-                                <ButtonGroup>
-                                    <Button
-                                        bsStyle="success"
-                                        disabled={saveStatus === "saving"}
-                                        onClick={onSave}
-                                    >
-                                        <Glyphicon glyph="floppy-disk" /> {t(locale, "save")}
-                                    </Button>
-                                    <Button
-                                        disabled={saveStatus === "saving"}
-                                        onClick={onCancelEdit}
-                                    >
-                                        {t(locale, "cancel")}
-                                    </Button>
-                                    <Button
-                                        bsStyle="danger"
-                                        disabled={!canDeleteCurrentFeature || saveStatus === "saving"}
-                                        onClick={onDelete}
-                                    >
-                                        {t(locale, "delete")}
-                                    </Button>
-                                </ButtonGroup>
-                            )}
+                                </div>
+                            ) : null}
                         </div>
                     </div>
                 )}
@@ -206,6 +226,7 @@ const PanelEditor = ({
 };
 
 PanelEditor.propTypes = {
+    layerConfig: PropTypes.object,
     enabled: PropTypes.bool,
     onClose: PropTypes.func,
     dockStyle: PropTypes.object,
@@ -216,7 +237,6 @@ PanelEditor.propTypes = {
     selectedResponseIndex: PropTypes.number,
     selectedFeatureIndex: PropTypes.number,
     selectedFeatures: PropTypes.array,
-    selectedLayerName: PropTypes.string,
     selectedFeature: PropTypes.object,
     selectedAttributes: PropTypes.object,
     editMode: PropTypes.bool,
@@ -234,6 +254,7 @@ PanelEditor.propTypes = {
 };
 
 PanelEditor.defaultProps = {
+    layerConfig: {},
     enabled: false,
     onClose: () => {},
     dockStyle: {},
@@ -244,7 +265,6 @@ PanelEditor.defaultProps = {
     selectedResponseIndex: 0,
     selectedFeatureIndex: 0,
     selectedFeatures: [],
-    selectedLayerName: "",
     selectedFeature: null,
     selectedAttributes: {},
     editMode: false,

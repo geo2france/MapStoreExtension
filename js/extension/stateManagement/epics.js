@@ -10,7 +10,7 @@ import {
     postWfsTransaction
 } from "../requests/wfsTransaction";
 import { getAreaOfCompetence } from "../requests/restrictedArea";
-import { getLayerConfig, getLayersList, getVisibleFieldNames, getWfsUrl, resolveFieldDefinition } from "../utiles/attributes";
+import { getLayersList, getVisibleFieldNames, getWfsUrl, resolveFieldDefinition } from "../utiles/attributes";
 import { t } from "../utiles/i18n";
 import { canEditField, canEditLayer, isRoleAllowed } from "../utiles/permissions";
 import { extractAreaGeometry, isRestrictedAreaOperationAllowed } from "../utiles/restrictedArea";
@@ -36,6 +36,7 @@ import {
     selectedFeatureIdSelector,
     selectedFeaturePropertiesSelector,
     selectedResponseLayerNameSelector,
+    selectedLayerConfigSelector,
     userRoleSelector,
     mapInfoClickPointSelector,
     mapInfoClickLayerSelector,
@@ -64,9 +65,12 @@ const getEnabledFromControlAction = (action = {}, state = {}) => {
     return null;
 };
 
+const PANEL_SIZE_EXTRA = 100;
+
 const getPanelSize = (state = {}) => {
     const pluginCfg = pluginCfgSelector(state);
-    return Number.isFinite(pluginCfg?.size) ? pluginCfg.size : 420;
+    const baseSize = Number.isFinite(pluginCfg?.size) ? pluginCfg.size : 420;
+    return baseSize + PANEL_SIZE_EXTRA;
 };
 
 const isRequiredValueMissing = (value) =>
@@ -96,7 +100,7 @@ const getEditableFieldChanges = ({
             layerConfig
         );
 
-        if (!canEditField(userRole, fieldDefinition)) {
+        if (!canEditField(userRole, fieldDefinition, selectedAttributes[fieldName])) {
             return acc;
         }
 
@@ -126,7 +130,7 @@ const getTransactionParams = (state = {}) => {
     const userRole = userRoleSelector(state);
     const formValues = formValuesSelector(state);
     const locale = currentLocaleSelector(state);
-    const layerConfig = getLayerConfig(pluginCfg, selectedLayerName) || {};
+    const layerConfig = selectedLayerConfigSelector(state);
     console.log(layerConfig);
     const clickPoint = mapInfoClickPointSelector(state);
     const clickLayer = mapInfoClickLayerSelector(state);
@@ -161,13 +165,11 @@ const getTransactionParams = (state = {}) => {
 };
 
 const getStartEditParams = (state = {}) => {
-    const pluginCfg = pluginCfgSelector(state);
-    const selectedLayerName = selectedResponseLayerNameSelector(state);
     const selectedFeature = selectedFeatureSelector(state);
     const selectedAttributes = selectedFeaturePropertiesSelector(state);
     const userRole = userRoleSelector(state);
     const locale = currentLocaleSelector(state);
-    const layerConfig = getLayerConfig(pluginCfg, selectedLayerName) || {};
+    const layerConfig = selectedLayerConfigSelector(state);
     console.log(layerConfig);
     const restrictedArea = layerConfig?.restrictedArea;
 

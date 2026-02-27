@@ -1,6 +1,6 @@
 import { createSelector } from "reselect";
 import { PANEL_EDITOR_CONTROL } from "../plugin/constants";
-import { getLayerNameFromResponse, getLayerTitleFromResponse } from "../utiles/attributes";
+import { getLayerNameFromResponse, getLayerTitleFromResponse, getLayersList } from "../utiles/attributes";
 
 export const panelEditorStateSelector = (state) => state?.panelEditor || {};
 export const panelEditorControlSelector = (state) => state?.controls?.[PANEL_EDITOR_CONTROL] || {};
@@ -78,6 +78,21 @@ export const selectedResponseSelector = createSelector(
 export const selectedResponseLayerNameSelector = createSelector(
     selectedResponseSelector,
     (response) => getLayerNameFromResponse(response)
+);
+
+const findLayerConfigByName = (pluginCfg = {}, layerName = "") =>
+    getLayersList(pluginCfg).find((layer) => layer?.name === layerName) || {};
+
+export const layerConfigByNameSelector = createSelector(
+    pluginCfgSelector,
+    (state, layerName) => layerName,
+    (pluginCfg, layerName) => findLayerConfigByName(pluginCfg, layerName)
+);
+
+export const selectedLayerConfigSelector = createSelector(
+    pluginCfgSelector,
+    selectedResponseLayerNameSelector,
+    (pluginCfg, selectedLayerName) => findLayerConfigByName(pluginCfg, selectedLayerName)
 );
 
 export const selectedFeatureCollectionSelector = createSelector(

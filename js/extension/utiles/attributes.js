@@ -35,9 +35,31 @@ export const getLayerNameFromResponse = (response = {}) =>
 export const getLayerTitleFromResponse = (response = {}) =>
     response?.layerMetadata?.title || getLayerNameFromResponse(response);
 
-export const getLayerConfig = (pluginConfig = {}, layerName) => {
-    const layers = getLayersList(pluginConfig);
-    return layers.find((layer) => layer?.name === layerName) || null;
+const hasOwn = (objectValue = {}, key = "") =>
+    Object.prototype.hasOwnProperty.call(objectValue, key);
+
+const toDisplayValue = (value) =>
+    value === null || value === undefined ? "" : String(value);
+
+export const getFeatureOptionLabel = (feature = {}, pluginConfig = {}, featureIndex = 0) => {
+    const featureProperties = isObject(feature?.properties) ? feature.properties : {};
+    const configuredLabel = pluginConfig?.featureFielLabel || pluginConfig?.featureFieldLabel;
+    const featureNumber = featureIndex + 1;
+    const labelKey = configuredLabel || "id";
+
+    let labelValue = "";
+    if (configuredLabel) {
+        labelValue = hasOwn(featureProperties, configuredLabel)
+            ? toDisplayValue(featureProperties[configuredLabel])
+            : "";
+    } else if (hasOwn(featureProperties, "id")) {
+        labelValue = toDisplayValue(featureProperties.id);
+    } else if (feature?.id !== null && feature?.id !== undefined) {
+        labelValue = toDisplayValue(feature.id);
+    }
+
+    const valueSuffix = labelValue ? ` ${labelValue}` : "";
+    return `[${featureNumber}] - (${labelKey})${valueSuffix}`;
 };
 
 // Accept both compact tuple and object field definitions from config.

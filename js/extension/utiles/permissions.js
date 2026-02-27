@@ -40,8 +40,17 @@ export const canDeleteFeature = (userRole, layerConfig = {}) => {
     return isRoleAllowed(userRole, deletionRoles);
 };
 
-export const canEditField = (userRole, fieldConfig = {}) => {
+const isRequiredValueMissing = (value) =>
+    value === null
+    || value === undefined
+    || (typeof value === "string" && value.trim() === "");
+
+export const canEditField = (userRole, fieldConfig = {}, currentValue) => {
     if (isAdminRole(userRole)) {
+        return true;
+    }
+    // Required fields with an empty value must stay editable to allow data completion.
+    if (fieldConfig?.required && isRequiredValueMissing(currentValue)) {
         return true;
     }
     if (fieldConfig?.editable === false) {

@@ -28,10 +28,10 @@ import {
     saveStatusSelector,
     selectedFeatureCollectionSelector,
     selectedFeatureIndexSelector,
+    selectedLayerConfigSelector,
     selectedFeaturePropertiesSelector,
     selectedFeatureSelector,
     selectedResponseIndexSelector,
-    selectedResponseLayerNameSelector,
     userRoleSelector,
     validationErrorsSelector
 } from "../stateManagement/selectors";
@@ -67,7 +67,7 @@ const mapStateToProps = (state, ownProps) => ({
     selectedResponseIndex: selectedResponseIndexSelector(state),
     selectedFeatureIndex: selectedFeatureIndexSelector(state),
     selectedFeatures: selectedFeatureCollectionSelector(state),
-    selectedLayerName: selectedResponseLayerNameSelector(state),
+    layerConfig: selectedLayerConfigSelector(state),
     selectedFeature: selectedFeatureSelector(state),
     selectedAttributes: selectedFeaturePropertiesSelector(state),
     editMode: editModeSelector(state),
