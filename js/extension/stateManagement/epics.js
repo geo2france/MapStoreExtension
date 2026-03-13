@@ -12,6 +12,7 @@ import {
 import { getAreaOfCompetence } from "../requests/restrictedArea";
 import {
     getLayersList,
+    resolveAttributeName,
     getVisibleFieldNames,
     getWfsUrl,
     resolveFieldDefinition
@@ -146,7 +147,7 @@ const getTransactionParams = (state = {}) => {
     const layerToRefresh = getLayerToRefresh(state, selectedLayerName);
 
     const typeName = layerConfig?.name || selectedLayerName;
-    const idField = layerConfig?.idField || "id";
+    const idField = resolveAttributeName(layerConfig?.idField || "id", selectedAttributes);
     const idValue = selectedAttributes?.[idField] ?? selectedFeatureId;
     const wfsUrl = getWfsUrl(pluginCfg, layerConfig);
 

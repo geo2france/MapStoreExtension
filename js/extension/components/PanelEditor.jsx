@@ -5,16 +5,21 @@ import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "re
 import { t } from "../utiles/i18n";
 import { canDeleteFeature, canEditField, canEditLayer } from "../utiles/permissions";
 import {
+    formatFieldDisplayValue,
     getFeatureOptionLabel,
     getVisibleFieldNames,
     resolveFieldDefinition
 } from "../utiles/attributes";
 import renderInputByType from "./formControls/renderInputByType";
 import SelectInputControl from "./formControls/SelectInputControl";
-import StaticValueControl from "./formControls/StaticValueControl";
 
 const PANEL_SIZE_EXTRA = 100;
 
+/**
+ * Main attributes panel used by the plugin in read and edit modes.
+ * @param {object} props Component props mapped from Redux and plugin wiring.
+ * @returns {React.ReactElement} Panel editor markup.
+ */
 const PanelEditor = ({
     layerConfig,
     enabled,
@@ -168,7 +173,7 @@ const PanelEditor = ({
                                             return (
                                                 <tr key={fieldName}>
                                                     <th>{fieldDefinition.label}</th>
-                                                    <td>{String(selectedAttributes[fieldName] ?? "")}</td>
+                                                    <td>{formatFieldDisplayValue(selectedAttributes[fieldName], fieldDefinition)}</td>
                                                 </tr>
                                             );
                                         })}
@@ -203,11 +208,13 @@ const PanelEditor = ({
                                                         options: fieldDefinition.options,
                                                         onChange: (value) => onUpdateField(fieldName, value)
                                                     })
-                                                    : (
-                                                        <StaticValueControl
-                                                            value={formValues[fieldName] ?? selectedAttributes[fieldName] ?? ""}
-                                                        />
-                                                    )}
+                                                    : renderInputByType({
+                                                        type: fieldDefinition.type,
+                                                        value: formValues[fieldName] ?? selectedAttributes[fieldName] ?? "",
+                                                        options: fieldDefinition.options,
+                                                        onChange: () => {},
+                                                        disabled: true
+                                                    })}
                                                 {fieldError ? <HelpBlock>{fieldError}</HelpBlock> : null}
                                             </FormGroup>
                                         );

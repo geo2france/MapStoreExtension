@@ -8,11 +8,26 @@ const escapeXml = (value = "") =>
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&apos;");
 
+const normalizeDateLiteral = (value) => {
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    const normalizedValue = value.trim();
+    const frenchDateMatch = normalizedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (frenchDateMatch) {
+        const [, day, month, year] = frenchDateMatch;
+        return `${year}-${month}-${day}`;
+    }
+
+    return value;
+};
+
 const formatLiteralValue = (value) => {
     if (value === null || value === undefined) {
         return "";
     }
-    return escapeXml(value);
+    return escapeXml(normalizeDateLiteral(value));
 };
 
 const buildWfsPropertiesBlock = (attributes = {}) =>

@@ -1,7 +1,7 @@
 import {
     formatDateValue,
     getAutoFields,
-    guessDateFormat
+    resolveAttributeName
 } from "./attributes";
 
 export const isAutoFieldUpdatedOnSave = (autoField = {}) => {
@@ -36,14 +36,12 @@ export const getAutomaticFieldChanges = ({
             return acc;
         }
 
-        const previousValue = selectedAttributes[autoField.name];
+        const attributeName = resolveAttributeName(autoField.name, selectedAttributes);
+        const previousValue = selectedAttributes[attributeName];
         let nextValue = previousValue;
 
         if (autoField.type === "date") {
-            nextValue = formatDateValue(
-                new Date(),
-                autoField.source || guessDateFormat(previousValue)
-            );
+            nextValue = formatDateValue(new Date());
         }
 
         if (autoField.type === "header") {
@@ -51,7 +49,7 @@ export const getAutomaticFieldChanges = ({
         }
 
         if (nextValue !== previousValue) {
-            acc[autoField.name] = nextValue;
+            acc[attributeName] = nextValue;
         }
 
         return acc;

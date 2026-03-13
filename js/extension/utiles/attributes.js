@@ -151,6 +151,18 @@ const findConfiguredFieldByName = (fields = [], fieldName = "") => {
     );
 };
 
+export const resolveAttributeName = (fieldName = "", attributes = {}) => {
+    if (!fieldName) {
+        return fieldName;
+    }
+
+    const attributeKeys = Object.keys(attributes || {});
+    return attributeKeys.find((attributeKey) =>
+        attributeKey === fieldName
+        || normalizeFieldKey(attributeKey) === normalizeFieldKey(fieldName)
+    ) || fieldName;
+};
+
 const buildFallbackFieldDefinition = (fieldName, fieldValue) => ({
     name: fieldName,
     label: fieldName,
@@ -241,4 +253,43 @@ export const formatDateValue = (value = new Date(), format = DEFAULT_AUTO_DATE_F
     };
 
     return String(format || DEFAULT_AUTO_DATE_FORMAT).replace(/YYYY|MM|DD/g, (token) => parts[token] || token);
+};
+
+const parseDateValue = (value) => {
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    const normalizedValue = String(value || "").trim();
+    if (!normalizedValue) {
+        return null;
+    }
+
+    const isoDateMatch = normalizedValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDateMatch) {
+        const [, year, month, day] = isoDateMatch;
+        return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+
+    const frenchDateMatch = normalizedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (frenchDateMatch) {
+        const [, day, month, year] = frenchDateMatch;
+        return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+
+    const parsedDate = new Date(normalizedValue);
+    return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+export const formatFieldDisplayValue = (value, fieldDefinition = {}) => {
+    if (fieldDefinition?.type !== "date") {
+        return toDisplayValue(value);
+    }
+
+    const parsedDate = parseDateValue(value);
+    if (!parsedDate) {
+        return toDisplayValue(value);
+    }
+
+    return formatDateValue(parsedDate, fieldDefinition?.source || guessDateFormat(value));
 };

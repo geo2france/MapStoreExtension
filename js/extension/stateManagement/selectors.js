@@ -61,8 +61,29 @@ export const mapInfoWasEnabledSelector = createSelector(
     (panelEditor) => !!panelEditor?.mapInfoWasEnabled
 );
 
-export const responseOptionsSelector = createSelector(
+const hasResponseFeatures = (response = {}) => {
+    const features = response?.layerMetadata?.features;
+    return Array.isArray(features) && features.length > 0;
+};
+
+export const panelEditorResponsesSelector = createSelector(
     mapInfoResponsesSelector,
+    pluginCfgSelector,
+    (responses = [], pluginCfg = {}) => {
+        const configuredLayerNames = getLayersList(pluginCfg)
+            .map((layer) => layer?.name)
+            .filter(Boolean);
+
+        return responses.filter((response) => {
+            const layerName = getLayerNameFromResponse(response);
+            const isConfiguredLayer = !configuredLayerNames.length || configuredLayerNames.includes(layerName);
+            return isConfiguredLayer && hasResponseFeatures(response);
+        });
+    }
+);
+
+export const responseOptionsSelector = createSelector(
+    panelEditorResponsesSelector,
     (responses = []) => responses.map((response, index) => ({
         value: index,
         layerName: getLayerNameFromResponse(response),
@@ -70,9 +91,16 @@ export const responseOptionsSelector = createSelector(
     }))
 );
 
-export const selectedResponseSelector = createSelector(
-    mapInfoResponsesSelector,
+export const safeSelectedResponseIndexSelector = createSelector(
     selectedResponseIndexSelector,
+    panelEditorResponsesSelector,
+    (selectedResponseIndex = 0, responses = []) =>
+        responses.length ? Math.min(selectedResponseIndex, responses.length - 1) : 0
+);
+
+export const selectedResponseSelector = createSelector(
+    panelEditorResponsesSelector,
+    safeSelectedResponseIndexSelector,
     (responses = [], selectedResponseIndex = 0) => responses[selectedResponseIndex] || null
 );
 
@@ -101,9 +129,16 @@ export const selectedFeatureCollectionSelector = createSelector(
     (response) => response?.layerMetadata?.features || []
 );
 
+export const safeSelectedFeatureIndexSelector = createSelector(
+    selectedFeatureIndexSelector,
+    selectedFeatureCollectionSelector,
+    (selectedFeatureIndex = 0, features = []) =>
+        features.length ? Math.min(selectedFeatureIndex, features.length - 1) : 0
+);
+
 export const selectedFeatureSelector = createSelector(
     selectedFeatureCollectionSelector,
-    selectedFeatureIndexSelector,
+    safeSelectedFeatureIndexSelector,
     (features = [], selectedFeatureIndex = 0) => features[selectedFeatureIndex] || null
 );
 
