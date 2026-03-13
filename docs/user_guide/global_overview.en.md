@@ -1,10 +1,10 @@
 # Presentation
 
-The `panel-editor` plugin adds a right-side panel.
+The `panel_editor` plugin adds a right-side panel.
 
 ## User flow
 
-1. Enable the tool from the menu (`panel-editor`).
+1. Enable the tool from the menu (`panel_editor`).
 2. Click on the map to run identify.
 3. Select the layer (if multiple responses) and the feature.
 4. Read visible attributes in read mode.

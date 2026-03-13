@@ -1,6 +1,6 @@
 # User Guide Index
 
-The `panel-editor` user guide is split into 3 sections:
+The `panel_editor` user guide is split into 3 sections:
 
 - **Presentation**: [Global overview](global_overview.md)
 - **Configuration**: [Getting started](getting_started.md)

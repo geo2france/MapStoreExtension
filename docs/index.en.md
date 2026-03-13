@@ -6,7 +6,7 @@ hide:
 
 # Home
 
-`panel-editor` is a MapStore plugin dedicated to attribute **read** and **edit** workflows.
+`panel_editor` is a MapStore plugin dedicated to attribute **read** and **edit** workflows.
 
 The plugin is **independent from other MapStore plugins**: it owns its Redux state, actions, and access rules without relying on another plugin's business logic.
 

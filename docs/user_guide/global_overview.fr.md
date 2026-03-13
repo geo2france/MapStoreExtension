@@ -1,10 +1,10 @@
 # Présentation
 
-Le plugin `panel-editor` ajoute un panneau latéral droit.
+Le plugin `panel_editor` ajoute un panneau latéral droit.
 
 ## Parcours utilisateur
 
-1. Activer l’outil depuis le menu (`panel-editor`).
+1. Activer l’outil depuis le menu (`panel_editor`).
 2. Cliquer sur la carte pour lancer l’identification des entités.
 3. Choisir la couche (si plusieurs réponses) puis l’entité.
 4. Consulter les champs visibles en mode lecture.

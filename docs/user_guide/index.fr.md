@@ -1,6 +1,6 @@
 # Sommaire du guide utilisateur
 
-Le guide utilisateur du plugin `panel-editor` est organisé en 3 parties :
+Le guide utilisateur du plugin `panel_editor` est organisé en 3 parties :
 
 - **Présentation**: [Vue globale](global_overview.md)
 - **Configuration**: [Prendre en main](getting_started.md)

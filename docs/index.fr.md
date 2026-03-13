@@ -6,7 +6,7 @@ hide:
 
 # Accueil
 
-`panel-editor` est un plugin MapStore dédié à la **lecture** et à l’**édition** d’attributs.
+`panel_editor` est un plugin MapStore dédié à la **lecture** et à l’**édition** d’attributs.
 
 Le plugin est **indépendant des autres plugins MapStore**: il gère son état, ses actions Redux et ses règles d’accès sans dépendre d’une logique métier d’un autre plugin.
 

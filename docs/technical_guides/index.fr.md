@@ -7,7 +7,7 @@ Organisation du code :
 - `js/extension/components` : UI React (sans I/O direct).
 - `js/extension/stateManagement` : actions, reducer, selectors, epics.
 - `js/extension/requests` : appels I/O (WFS, zone de compétence).
-- `js/extension/utiles` : helpers purs (permissions, attributs, i18n, géométrie).
+- `js/extension/utiles` : helpers purs (permissions, attributs, champs auto, i18n, géométrie).
 - `js/extension/plugin` : wiring MapStore (`createPlugin`, reducers, epics).
 
 Flux Redux attendu :
@@ -43,9 +43,11 @@ Le zip d’extension est généré dans `dist/`.
 
 ## Notes de configuration
 
-- Le plugin est déclaré dans `assets/index.json` avec le nom `panel-editor`.
+- Le plugin est déclaré dans `assets/index.json` avec le nom `panel_editor`.
 - Le nom d’extension est défini dans `config.js`.
 - La configuration d’exécution se fait dans `configs/localConfig.json`.
+- Les champs automatiques (`auto`) sont résolus dans les helpers, puis injectés dans la transaction au moment de la sauvegarde.
+- La couche `requests` valide aussi le contenu XML des réponses WFS-T : un HTTP `200` contenant une erreur OGC/WFS est renvoyé comme erreur applicative.
 
 ## Référence complémentaire
 

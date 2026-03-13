@@ -1,6 +1,6 @@
 # Configuration
 
-Configuration is defined in `localConfig.json` under the `panel-editor` plugin.
+Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 
 ## 1) Global plugin configuration (`cfg`)
 
@@ -22,6 +22,7 @@ Configuration is defined in `localConfig.json` under the `panel-editor` plugin.
 | `featureFielLabel` | `string` | no | Tolerated alias (compatibility). |
 | `hidden` | `string[]` | no | Fields hidden in read/edit views. |
 | `fields` | `array` | no | Detailed field definition (see next table). |
+| `auto` | `array` | no | Fields filled automatically on save. |
 | `edit` / `editingRoles` | `string[]` | no | Roles allowed to edit the layer. |
 | `delete` / `deletionRoles` | `string[]` | no | Roles allowed to delete. |
 | `wfsUrl` | `string` | no | Layer-specific WFS URL. |
@@ -43,11 +44,30 @@ Each `fields` entry accepts compact format:
 | `5` | `roles` | `string[]` | Roles allowed to edit this field. |
 | `6` | `options` | `array` | Values for list/select inputs. |
 
+## 4) Automatic field configuration (`auto`)
+
+Each `auto` entry accepts compact format:
+`[name, type, source]`
+
+| Position | Name | Type | Description |
+|---:|---|---|---|
+| `0` | `name` | `string` | Field name to populate. |
+| `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`. |
+| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, output format (`YYYY-MM-DD`, `DD/MM/YYYY`, ...). |
+
+Rules:
+
+- A field declared in `auto` is never editable in the form.
+- The panel always displays the last known value.
+- If `type` is `header`, the value is read from user information already exposed by MapStore/geOrchestra, using the configured path.
+- If `type` is `date`, the value is replaced with the current date on save.
+- `auto` fields are injected into the WFS-T transaction even if they are also listed in `hidden`.
+
 ## Complete example (global + layer + fields)
 
 ```json
 {
-  "name": "panel-editor",
+  "name": "panel_editor",
   "cfg": {
     "title": "Reviewed projects",
     "tooltip": "Reviewed projects",
@@ -64,6 +84,10 @@ Each `fields` entry accepts compact format:
           "log_date_modi",
           "log_user_crea",
           "log_user_modi"
+        ],
+        "auto": [
+          ["log_user_modi", "header", "username"],
+          ["log_date_modi", "date", "DD/MM/YYYY"]
         ],
         "edit": ["EDITOR", "ADMIN"],
         "delete": ["ADMIN"],
@@ -89,4 +113,6 @@ Each `fields` entry accepts compact format:
   `[number] - (field_name) field_value`.
 - `ADMIN` / `ROLE_ADMIN` has full permissions.
 - If a field is `required` and empty, it stays editable even if `editable` is `false`.
+- `auto` fields stay read-only and are populated at save time.
 - Spatial restriction key supported by the plugin is `restrictedArea`.
+- A WFS-T HTTP `200` response that contains an XML error is treated as a failure and shows an error notification.
