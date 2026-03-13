@@ -30,6 +30,8 @@ import {
     PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX,
     describeFeatureTypeError,
     requestDescribeFeatureType,
+    resetPanelEditorState,
+    setMapInfoPreviousFormat,
     setDescribeFeatureType,
     setFormValues,
     setEditMode,
@@ -43,6 +45,7 @@ import {
     isActive,
     currentUserSelector,
     currentLocaleSelector,
+    currentMapInfoFormatSelector,
     formValuesSelector,
     pluginCfgSelector,
     describeFeatureTypeRequestsSelector,
@@ -56,6 +59,7 @@ import {
     mapInfoClickPointSelector,
     mapInfoClickLayerSelector,
     mapInfoFilterNameListSelector,
+    mapInfoPreviousFormatSelector,
     mapInfoWasEnabledSelector,
     mapInfoOverrideParamsSelector,
     mapInfoItemIdSelector
@@ -219,11 +223,9 @@ export const syncIdentifyStateWithPanelEditorEpic = (action$, { getState }) =>
             }
             return Rx.Observable.from([
                 updateDockPanelsList(PANEL_EDITOR_CONTROL, "remove", "right"),
-                setEditMode(false),
-                setSaveStatus("idle"),
-                setSaveMessage(""),
-                setValidationErrors({}),
+                resetPanelEditorState(),
                 changeMapInfoState(mapInfoWasEnabledSelector(state)),
+                changeMapInfoFormat(mapInfoPreviousFormatSelector(state)),
                 setMapInfoWasEnabled(false)
             ]);
         });
@@ -241,6 +243,7 @@ export const registerPanelEditorDockPanelEpic = (action$, { getState }) =>
         .switchMap(({ state }) => Rx.Observable.from([
             updateDockPanelsList(PANEL_EDITOR_CONTROL, "add", "right"),
             setMapInfoWasEnabled(!!state?.mapInfo?.enabled),
+            setMapInfoPreviousFormat(currentMapInfoFormatSelector(state)),
             changeMapInfoState(false),
             changeMapInfoFormat("application/json")
         ]));

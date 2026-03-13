@@ -9,6 +9,7 @@ import {
     PANEL_EDITOR_SET_SAVE_MESSAGE,
     PANEL_EDITOR_SET_VALIDATION_ERRORS,
     PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED,
+    PANEL_EDITOR_SET_MAPINFO_PREVIOUS_FORMAT,
     PANEL_EDITOR_SETUP,
     PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE,
     PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE,
@@ -24,6 +25,7 @@ const initialState = {
     saveMessage: "",
     validationErrors: {},
     mapInfoWasEnabled: false,
+    mapInfoPreviousFormat: "text/plain",
     pluginCfg: {},
     describeFeatureTypes: {},
     describeFeatureTypeRequests: {}
@@ -82,6 +84,11 @@ export default function panelEditor(state = initialState, action = {}) {
         return {
             ...state,
             mapInfoWasEnabled: !!action.enabled
+        };
+    case PANEL_EDITOR_SET_MAPINFO_PREVIOUS_FORMAT:
+        return {
+            ...state,
+            mapInfoPreviousFormat: action.infoFormat || "text/plain"
         };
     case PANEL_EDITOR_SETUP:
         return {

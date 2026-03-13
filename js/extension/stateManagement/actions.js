@@ -8,6 +8,7 @@ export const PANEL_EDITOR_SET_SAVE_STATUS = "PANEL_EDITOR:SET_SAVE_STATUS";
 export const PANEL_EDITOR_SET_SAVE_MESSAGE = "PANEL_EDITOR:SET_SAVE_MESSAGE";
 export const PANEL_EDITOR_SET_VALIDATION_ERRORS = "PANEL_EDITOR:SET_VALIDATION_ERRORS";
 export const PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED = "PANEL_EDITOR:SET_MAPINFO_WAS_ENABLED";
+export const PANEL_EDITOR_SET_MAPINFO_PREVIOUS_FORMAT = "PANEL_EDITOR:SET_MAPINFO_PREVIOUS_FORMAT";
 export const PANEL_EDITOR_SETUP = "PANEL_EDITOR:SETUP";
 export const PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:REQUEST_DESCRIBE_FEATURE_TYPE";
 export const PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:SET_DESCRIBE_FEATURE_TYPE";
@@ -65,6 +66,11 @@ export const setValidationErrors = (errors = {}) => ({
 export const setMapInfoWasEnabled = (enabled) => ({
     type: PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED,
     enabled: !!enabled
+});
+
+export const setMapInfoPreviousFormat = (infoFormat = "text/plain") => ({
+    type: PANEL_EDITOR_SET_MAPINFO_PREVIOUS_FORMAT,
+    infoFormat
 });
 
 export const setup = (pluginCfg = {}) => ({
