@@ -5,6 +5,7 @@ import { getLayerNameFromResponse, getLayerTitleFromResponse, getLayersList } fr
 export const panelEditorStateSelector = (state) => state?.panelEditor || {};
 export const panelEditorControlSelector = (state) => state?.controls?.[PANEL_EDITOR_CONTROL] || {};
 export const mapInfoResponsesSelector = (state) => state?.mapInfo?.responses || [];
+export const currentUserSelector = (state) => state?.security?.user || {};
 export const userRoleSelector = (state) => state?.security?.user?.role;
 export const currentLocaleSelector = (state) => state?.locale?.current || "en-US";
 

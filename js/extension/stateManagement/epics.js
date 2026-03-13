@@ -10,7 +10,13 @@ import {
     postWfsTransaction
 } from "../requests/wfsTransaction";
 import { getAreaOfCompetence } from "../requests/restrictedArea";
-import { getLayersList, getVisibleFieldNames, getWfsUrl, resolveFieldDefinition } from "../utiles/attributes";
+import {
+    getLayersList,
+    getVisibleFieldNames,
+    getWfsUrl,
+    resolveFieldDefinition
+} from "../utiles/attributes";
+import { getAutomaticFieldChanges } from "../utiles/autoFields";
 import { t } from "../utiles/i18n";
 import { canEditField, canEditLayer, isRoleAllowed } from "../utiles/permissions";
 import { extractAreaGeometry, isRestrictedAreaOperationAllowed } from "../utiles/restrictedArea";
@@ -29,6 +35,7 @@ import {
 import { PANEL_EDITOR_CONTROL } from "../plugin/constants";
 import {
     isActive,
+    currentUserSelector,
     currentLocaleSelector,
     formValuesSelector,
     pluginCfgSelector,
@@ -92,7 +99,6 @@ const getEditableFieldChanges = ({
     layerConfig = {}
 }) => {
     const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
-    console.log(layerConfig);
     return visibleFields.reduce((acc, fieldName) => {
         const fieldDefinition = resolveFieldDefinition(
             fieldName,
@@ -127,11 +133,11 @@ const getTransactionParams = (state = {}) => {
     const selectedLayerName = selectedResponseLayerNameSelector(state);
     const selectedAttributes = selectedFeaturePropertiesSelector(state);
     const selectedFeatureId = selectedFeatureIdSelector(state);
+    const currentUser = currentUserSelector(state);
     const userRole = userRoleSelector(state);
     const formValues = formValuesSelector(state);
     const locale = currentLocaleSelector(state);
     const layerConfig = selectedLayerConfigSelector(state);
-    console.log(layerConfig);
     const clickPoint = mapInfoClickPointSelector(state);
     const clickLayer = mapInfoClickLayerSelector(state);
     const filterNameList = mapInfoFilterNameListSelector(state);
@@ -151,6 +157,7 @@ const getTransactionParams = (state = {}) => {
         idValue,
         wfsUrl,
         formValues,
+        currentUser,
         userRole,
         selectedAttributes,
         layerConfig,
@@ -170,7 +177,6 @@ const getStartEditParams = (state = {}) => {
     const userRole = userRoleSelector(state);
     const locale = currentLocaleSelector(state);
     const layerConfig = selectedLayerConfigSelector(state);
-    console.log(layerConfig);
     const restrictedArea = layerConfig?.restrictedArea;
 
     return {
@@ -238,6 +244,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                 idValue,
                 wfsUrl,
                 formValues,
+                currentUser,
                 userRole,
                 selectedAttributes,
                 layerConfig,
@@ -270,6 +277,17 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                     layerConfig
                 })
                 : { changedAttributes: {}, validationErrors: {} };
+            const automaticChanges = action.type === PANEL_EDITOR_REQUEST_SAVE
+                ? getAutomaticFieldChanges({
+                    currentUser,
+                    selectedAttributes,
+                    layerConfig
+                })
+                : {};
+            const attributesToSave = {
+                ...changedAttributes,
+                ...automaticChanges
+            };
 
             if (action.type === PANEL_EDITOR_REQUEST_SAVE && Object.keys(validationErrors).length) {
                 return Rx.Observable.of(
@@ -279,7 +297,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                 );
             }
 
-            if (action.type === PANEL_EDITOR_REQUEST_SAVE && !Object.keys(changedAttributes).length) {
+            if (action.type === PANEL_EDITOR_REQUEST_SAVE && !Object.keys(attributesToSave).length) {
                 return Rx.Observable.of(
                     setValidationErrors({}),
                     setSaveStatus("idle"),
@@ -292,7 +310,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                     typeName,
                     idField,
                     idValue,
-                    attributes: changedAttributes
+                    attributes: attributesToSave
                 })
                 : buildDeleteTransactionPayload({
                     typeName,
@@ -337,7 +355,6 @@ export const startEditWithPermissionsEpic = (action$, store) =>
     action$
         .ofType(PANEL_EDITOR_REQUEST_START_EDIT)
         .switchMap(() => {
-            console.log("startEditWithPermissionsEpic triggered");
             const state = store.getState();
             const {
                 locale,
@@ -347,8 +364,6 @@ export const startEditWithPermissionsEpic = (action$, store) =>
                 layerConfig,
                 restrictedArea
             } = getStartEditParams(state);
-
-            console.log("TEST ===============");
 
             if (!canEditLayer(userRole, layerConfig)) {
                 return Rx.Observable.of(

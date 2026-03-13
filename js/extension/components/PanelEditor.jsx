@@ -50,8 +50,6 @@ const PanelEditor = ({
     const baseSize = Number.isFinite(cfg?.size) ? cfg.size : 420;
     const size = baseSize + PANEL_SIZE_EXTRA;
 
-    console.log(layerConfig);
-
     return (
         <ResponsivePanel
             containerId="panel-editor-container"
@@ -192,7 +190,6 @@ const PanelEditor = ({
                                             selectedAttributes[fieldName]
                                         );
                                         const fieldError = validationErrors[fieldName];
-                                        console.log(fieldEditable);
                                         return (
                                             <FormGroup key={fieldName} validationState={fieldError ? "error" : null}>
                                                 <ControlLabel>

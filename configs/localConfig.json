@@ -409,7 +409,7 @@
     ],
     "desktop": [
       {
-        "name": "panel-editor",
+        "name": "panel_editor",
         "cfg": {
           "tooltip": "Projets avisés",
           "icon": "map",
@@ -429,10 +429,14 @@
                 "log_date_crea",
                 "log_date_modi",
                 "log_user_crea",
-                "log_user_modi",
                 "id_avis"
               ],
               "auto": [
+                [
+                  "log_user_modi",
+                  "header",
+                  "sec.username"
+                ],
                 [
                   "log_user_crea",
                   "header",
@@ -440,6 +444,11 @@
                 ],
                 [
                   "log_date_crea",
+                  "date",
+                  "DD/MM/YYYY"
+                ],
+                [
+                  "log_date_modi",
                   "date",
                   "DD/MM/YYYY"
                 ]

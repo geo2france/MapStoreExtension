@@ -1,6 +1,7 @@
 const isObject = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 
 const DEFAULT_FIELD_TYPE = "string";
+const DEFAULT_AUTO_DATE_FORMAT = "YYYY-MM-DD";
 const normalizeFieldKey = (fieldName = "") =>
     String(fieldName || "")
         .trim()
@@ -92,9 +93,41 @@ const normalizeFieldEntry = (fieldEntry = []) => {
     return null;
 };
 
+const normalizeAutoFieldEntry = (fieldEntry = []) => {
+    if (Array.isArray(fieldEntry)) {
+        const [name, type, sourceOrFormat, onSave] = fieldEntry;
+        return {
+            name,
+            type: type || DEFAULT_FIELD_TYPE,
+            source: sourceOrFormat,
+            onSave: !!onSave,
+            auto: true,
+            editable: false
+        };
+    }
+
+    if (isObject(fieldEntry)) {
+        return {
+            name: fieldEntry.name,
+            type: fieldEntry.type || DEFAULT_FIELD_TYPE,
+            source: fieldEntry.source || fieldEntry.format || fieldEntry.value,
+            onSave: !!fieldEntry.onSave,
+            auto: true,
+            editable: false
+        };
+    }
+
+    return null;
+};
+
 export const getConfiguredFields = (layerConfig = {}) => {
     const rawFields = Array.isArray(layerConfig?.fields) ? layerConfig.fields : [];
     return rawFields.map(normalizeFieldEntry).filter((entry) => !!entry?.name);
+};
+
+export const getAutoFields = (layerConfig = {}) => {
+    const rawFields = Array.isArray(layerConfig?.auto) ? layerConfig.auto : [];
+    return rawFields.map(normalizeAutoFieldEntry).filter((entry) => !!entry?.name);
 };
 
 export const getHiddenFields = (layerConfig = {}) =>
@@ -110,28 +143,43 @@ const inferFieldType = (value) => {
     return DEFAULT_FIELD_TYPE;
 };
 
-export const resolveFieldDefinition = (fieldName, fieldValue, layerConfig = {}) => {
-    const fields = getConfiguredFields(layerConfig);
+const findConfiguredFieldByName = (fields = [], fieldName = "") => {
     const normalizedInputFieldName = normalizeFieldKey(fieldName);
-    // Match by exact name first, then by normalized key to absorb naming differences from GFI.
-    const configuredField = fields.find((field) =>
+    return fields.find((field) =>
         field.name === fieldName
         || normalizeFieldKey(field.name) === normalizedInputFieldName
     );
-    console.log(layerConfig);
-    if (configuredField) {
-        return configuredField;
+};
+
+const buildFallbackFieldDefinition = (fieldName, fieldValue) => ({
+    name: fieldName,
+    label: fieldName,
+    type: inferFieldType(fieldValue),
+    editable: true,
+    required: false,
+    roles: [],
+    options: []
+});
+
+export const resolveFieldDefinition = (fieldName, fieldValue, layerConfig = {}) => {
+    const fields = getConfiguredFields(layerConfig);
+    const autoFields = getAutoFields(layerConfig);
+    const configuredField = findConfiguredFieldByName(fields, fieldName);
+    const autoField = findConfiguredFieldByName(autoFields, fieldName);
+    const baseDefinition = configuredField || buildFallbackFieldDefinition(fieldName, fieldValue);
+
+    if (autoField || baseDefinition.type === "auto") {
+        return {
+            ...baseDefinition,
+            ...autoField,
+            label: baseDefinition.label || fieldName,
+            type: autoField?.type || baseDefinition.type,
+            editable: false,
+            auto: true
+        };
     }
 
-    return {
-        name: fieldName,
-        label: fieldName,
-        type: inferFieldType(fieldValue),
-        editable: true,
-        required: false,
-        roles: [],
-        options: []
-    };
+    return baseDefinition;
 };
 
 export const getVisibleFieldNames = (attributes = {}, layerConfig = {}) => {
@@ -167,4 +215,30 @@ export const getWfsUrl = (pluginConfig = {}, layerConfig = {}) => {
         return `${normalizedBase}/wfs`;
     }
     return `${normalizedBase}/geoserver/wfs`;
+};
+
+export const guessDateFormat = (value = "") => {
+    const normalizedValue = String(value || "").trim();
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(normalizedValue)) {
+        return "DD/MM/YYYY";
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+        return "YYYY-MM-DD";
+    }
+    return DEFAULT_AUTO_DATE_FORMAT;
+};
+
+export const formatDateValue = (value = new Date(), format = DEFAULT_AUTO_DATE_FORMAT) => {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const parts = {
+        YYYY: String(date.getFullYear()),
+        MM: String(date.getMonth() + 1).padStart(2, "0"),
+        DD: String(date.getDate()).padStart(2, "0")
+    };
+
+    return String(format || DEFAULT_AUTO_DATE_FORMAT).replace(/YYYY|MM|DD/g, (token) => parts[token] || token);
 };

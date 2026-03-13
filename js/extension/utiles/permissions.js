@@ -46,6 +46,9 @@ const isRequiredValueMissing = (value) =>
     || (typeof value === "string" && value.trim() === "");
 
 export const canEditField = (userRole, fieldConfig = {}, currentValue) => {
+    if (fieldConfig?.auto || fieldConfig?.type === "auto") {
+        return false;
+    }
     if (isAdminRole(userRole)) {
         return true;
     }

@@ -34,6 +34,56 @@ const buildFeatureFilter = (idField, idValue) => `
     </ogc:Filter>
 `;
 
+const parseXmlResponse = (xmlText = "") => {
+    if (!xmlText || typeof DOMParser === "undefined") {
+        return null;
+    }
+    return new DOMParser().parseFromString(xmlText, "text/xml");
+};
+
+const getFirstNodeText = (xmlDocument, selectors = []) => {
+    const node = selectors
+        .map((selector) => xmlDocument?.querySelector(selector))
+        .find((candidate) => !!candidate);
+    return node?.textContent?.trim() || "";
+};
+
+const getWfsTransactionError = (responseData) => {
+    if (typeof responseData !== "string") {
+        return "";
+    }
+
+    const xmlDocument = parseXmlResponse(responseData);
+    if (!xmlDocument) {
+        return "";
+    }
+
+    const parserError = xmlDocument.querySelector("parsererror");
+    if (parserError) {
+        return parserError.textContent?.trim() || "Invalid XML response";
+    }
+
+    const exceptionMessage = getFirstNodeText(xmlDocument, [
+        "ExceptionText",
+        "ows\\:ExceptionText",
+        "ServiceException"
+    ]);
+    if (exceptionMessage) {
+        return exceptionMessage;
+    }
+
+    const transactionStatus = getFirstNodeText(xmlDocument, [
+        "TransactionResult Status",
+        "wfs\\:TransactionResult wfs\\:Status",
+        "Status"
+    ]);
+    if (/failed/i.test(transactionStatus)) {
+        return transactionStatus;
+    }
+
+    return "";
+};
+
 export const buildUpdateTransactionPayload = ({ typeName, idField, idValue, attributes }) => `
     <wfs:Transaction service="WFS" version="1.1.0"
         xmlns:wfs="http://www.opengis.net/wfs"
@@ -61,4 +111,10 @@ export const postWfsTransaction = (url, xmlPayload, headers = {}) =>
             "Content-Type": "text/xml",
             ...headers
         }
+    }).then((response) => {
+        const transactionError = getWfsTransactionError(response?.data);
+        if (transactionError) {
+            throw new Error(transactionError);
+        }
+        return response;
     });
