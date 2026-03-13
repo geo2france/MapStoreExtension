@@ -47,6 +47,7 @@ The extension zip is generated in `dist/`.
 - Extension name is defined in `config.js`.
 - Runtime configuration is in `configs/localConfig.json`.
 - Automatic fields (`auto`) are resolved in helpers, then injected into the transaction at save time.
+- Supported `auto` types include `header`, `date`, `area`, and `length`. Default units are `m²` for `area` and `m` for `length`.
 - The `requests` layer also validates WFS-T XML responses: an HTTP `200` containing an OGC/WFS error is treated as an application error.
 
 ## Additional reference

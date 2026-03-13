@@ -52,8 +52,8 @@ Chaque entrée de `auto` accepte le format compact :
 | Position | Nom | Type | Description |
 |---:|---|---|---|
 | `0` | `name` | `string` | Nom du champ à renseigner. |
-| `1` | `type` | `string` | Type automatique. Valeurs supportées : `header`, `date`. |
-| `2` | `source` | `string` | Source à utiliser. Pour `header`, chemin à lire dans `security.user`. Pour `date`, format de sortie (`YYYY-MM-DD`, `DD/MM/YYYY`, ...). |
+| `1` | `type` | `string` | Type automatique. Valeurs supportées : `header`, `date`, `area`, `length`. |
+| `2` | `source` | `string` | Source à utiliser. Pour `header`, chemin à lire dans `security.user`. Pour `date`, format d'affichage souhaité. Inutile pour `area` et `length`. |
 
 Règles :
 
@@ -61,6 +61,8 @@ Règles :
 - Le panneau affiche toujours la dernière valeur connue du champ.
 - Si `type` vaut `header`, la valeur est lue dans les informations utilisateur déjà exposées par MapStore/geOrchestra, selon le chemin indiqué.
 - Si `type` vaut `date`, la valeur est remplacée par la date courante à la sauvegarde.
+- Si `type` vaut `area`, la valeur est calculée à partir de la géométrie de la feature. L’unité par défaut est le mètre carré (`m²`).
+- Si `type` vaut `length`, la valeur est calculée à partir de la géométrie de la feature. Pour une ligne, c’est la longueur. Pour un polygone, c’est le périmètre. L’unité par défaut est le mètre (`m`).
 - Les champs `auto` sont injectés dans la transaction WFS-T même s’ils sont aussi présents dans `hidden`.
 
 ## Exemple complet (global + couche + champs)
@@ -87,7 +89,9 @@ Règles :
         ],
         "auto": [
           ["log_user_modi", "header", "username"],
-          ["log_date_modi", "date", "DD/MM/YYYY"]
+          ["log_date_modi", "date", "DD/MM/YYYY"],
+          ["surface_carto", "area"],
+          ["longueur_carto", "length"]
         ],
         "edit": ["EDITOR", "ADMIN"],
         "delete": ["ADMIN"],
@@ -114,5 +118,6 @@ Règles :
 - `ADMIN` / `ROLE_ADMIN` a tous les droits.
 - Si un champ est `required` et vide, il reste éditable même si `editable` vaut `false`.
 - Les champs `auto` restent en lecture seule et sont valorisés au moment de la sauvegarde.
+- Les unités par défaut des calculs géométriques sont `m²` pour `area` et `m` pour `length`.
 - La clé de restriction spatiale utilisée par le plugin est `restrictedArea`.
 - Une réponse WFS-T en HTTP `200` mais contenant une erreur XML est traitée comme un échec et affiche une notification d’erreur.

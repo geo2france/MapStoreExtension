@@ -52,8 +52,8 @@ Each `auto` entry accepts compact format:
 | Position | Name | Type | Description |
 |---:|---|---|---|
 | `0` | `name` | `string` | Field name to populate. |
-| `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`. |
-| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, output format (`YYYY-MM-DD`, `DD/MM/YYYY`, ...). |
+| `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`, `area`, `length`. |
+| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, desired display format. Not used for `area` and `length`. |
 
 Rules:
 
@@ -61,6 +61,8 @@ Rules:
 - The panel always displays the last known value.
 - If `type` is `header`, the value is read from user information already exposed by MapStore/geOrchestra, using the configured path.
 - If `type` is `date`, the value is replaced with the current date on save.
+- If `type` is `area`, the value is computed from the feature geometry. Default unit is square meters (`m²`).
+- If `type` is `length`, the value is computed from the feature geometry. For a line, this is the length. For a polygon, this is the perimeter. Default unit is meters (`m`).
 - `auto` fields are injected into the WFS-T transaction even if they are also listed in `hidden`.
 
 ## Complete example (global + layer + fields)
@@ -87,7 +89,9 @@ Rules:
         ],
         "auto": [
           ["log_user_modi", "header", "username"],
-          ["log_date_modi", "date", "DD/MM/YYYY"]
+          ["log_date_modi", "date", "DD/MM/YYYY"],
+          ["surface_carto", "area"],
+          ["longueur_carto", "length"]
         ],
         "edit": ["EDITOR", "ADMIN"],
         "delete": ["ADMIN"],
@@ -114,5 +118,6 @@ Rules:
 - `ADMIN` / `ROLE_ADMIN` has full permissions.
 - If a field is `required` and empty, it stays editable even if `editable` is `false`.
 - `auto` fields stay read-only and are populated at save time.
+- Default units for geometry-based calculations are `m²` for `area` and `m` for `length`.
 - Spatial restriction key supported by the plugin is `restrictedArea`.
 - A WFS-T HTTP `200` response that contains an XML error is treated as a failure and shows an error notification.

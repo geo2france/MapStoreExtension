@@ -1,14 +1,18 @@
+import GeoJSON from "ol/format/GeoJSON";
+import { getArea, getLength } from "ol/sphere";
 import {
     formatDateValue,
     getAutoFields,
     resolveAttributeName
 } from "./attributes";
 
+const geoJsonFormat = new GeoJSON();
+
 export const isAutoFieldUpdatedOnSave = (autoField = {}) => {
     if (autoField?.onSave) {
         return true;
     }
-    return autoField?.type === "date" || autoField?.type === "header";
+    return ["date", "header", "area", "length"].includes(autoField?.type);
 };
 
 const getValueByPath = (source = {}, path = "") =>
@@ -26,7 +30,34 @@ export const resolveHeaderAutoValue = (currentUser = {}, source = "") => {
     return String(getValueByPath(currentUser, normalizedSource) || "");
 };
 
+const readGeometry = (geometry) => {
+    if (!geometry) {
+        return null;
+    }
+    try {
+        return geoJsonFormat.readGeometry(geometry);
+    } catch (error) {
+        return null;
+    }
+};
+
+const resolveGeometryAutoValue = (geometry, type) => {
+    const olGeometry = readGeometry(geometry);
+    if (!olGeometry) {
+        return null;
+    }
+
+    if (type === "area") {
+        return getArea(olGeometry);
+    }
+    if (type === "length") {
+        return getLength(olGeometry);
+    }
+    return null;
+};
+
 export const getAutomaticFieldChanges = ({
+    featureGeometry = null,
     selectedAttributes = {},
     layerConfig = {},
     currentUser = {}
@@ -46,6 +77,10 @@ export const getAutomaticFieldChanges = ({
 
         if (autoField.type === "header") {
             nextValue = resolveHeaderAutoValue(currentUser, autoField.source);
+        }
+
+        if (autoField.type === "area" || autoField.type === "length") {
+            nextValue = resolveGeometryAutoValue(featureGeometry, autoField.type);
         }
 
         if (nextValue !== previousValue) {

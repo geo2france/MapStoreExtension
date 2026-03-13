@@ -143,6 +143,7 @@ const getTransactionParams = (state = {}) => {
     const selectedLayerName = selectedResponseLayerNameSelector(state);
     const selectedAttributes = selectedFeaturePropertiesSelector(state);
     const selectedFeatureId = selectedFeatureIdSelector(state);
+    const selectedFeature = selectedFeatureSelector(state);
     const currentUser = currentUserSelector(state);
     const userRole = userRoleSelector(state);
     const formValues = formValuesSelector(state);
@@ -171,6 +172,7 @@ const getTransactionParams = (state = {}) => {
         currentUser,
         userRole,
         describeFeatureType,
+        selectedFeature,
         selectedAttributes,
         layerConfig,
         selectedLayerName,
@@ -259,6 +261,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                 currentUser,
                 userRole,
                 describeFeatureType,
+                selectedFeature,
                 selectedAttributes,
                 layerConfig,
                 selectedLayerName,
@@ -294,6 +297,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
             const automaticChanges = action.type === PANEL_EDITOR_REQUEST_SAVE
                 ? getAutomaticFieldChanges({
                     currentUser,
+                    featureGeometry: selectedFeature?.geometry,
                     selectedAttributes,
                     layerConfig
                 })

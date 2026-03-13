@@ -47,6 +47,7 @@ Le zip d’extension est généré dans `dist/`.
 - Le nom d’extension est défini dans `config.js`.
 - La configuration d’exécution se fait dans `configs/localConfig.json`.
 - Les champs automatiques (`auto`) sont résolus dans les helpers, puis injectés dans la transaction au moment de la sauvegarde.
+- Les types `auto` supportés incluent `header`, `date`, `area` et `length`. Les unités par défaut sont `m²` pour `area` et `m` pour `length`.
 - La couche `requests` valide aussi le contenu XML des réponses WFS-T : un HTTP `200` contenant une erreur OGC/WFS est renvoyé comme erreur applicative.
 
 ## Référence complémentaire
