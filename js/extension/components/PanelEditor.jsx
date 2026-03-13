@@ -22,6 +22,7 @@ const PANEL_SIZE_EXTRA = 100;
  */
 const PanelEditor = ({
     layerConfig,
+    describeFeatureType,
     enabled,
     onClose,
     dockStyle,
@@ -168,7 +169,8 @@ const PanelEditor = ({
                                             const fieldDefinition = resolveFieldDefinition(
                                                 fieldName,
                                                 selectedAttributes[fieldName],
-                                                layerConfig
+                                                layerConfig,
+                                                describeFeatureType
                                             );
                                             return (
                                                 <tr key={fieldName}>
@@ -187,7 +189,8 @@ const PanelEditor = ({
                                         const fieldDefinition = resolveFieldDefinition(
                                             fieldName,
                                             selectedAttributes[fieldName],
-                                            layerConfig
+                                            layerConfig,
+                                            describeFeatureType
                                         );
                                         const fieldEditable = canEditField(
                                             userRole,
@@ -231,6 +234,7 @@ const PanelEditor = ({
 
 PanelEditor.propTypes = {
     layerConfig: PropTypes.object,
+    describeFeatureType: PropTypes.object,
     enabled: PropTypes.bool,
     onClose: PropTypes.func,
     dockStyle: PropTypes.object,
@@ -259,6 +263,7 @@ PanelEditor.propTypes = {
 
 PanelEditor.defaultProps = {
     layerConfig: {},
+    describeFeatureType: null,
     enabled: false,
     onClose: () => {},
     dockStyle: {},

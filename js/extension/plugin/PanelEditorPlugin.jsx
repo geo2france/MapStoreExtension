@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button, Glyphicon } from "react-bootstrap";
-import tooltip from "@mapstore/components/misc/enhancers/tooltip";
+import { Glyphicon } from "react-bootstrap";
 import { toggleControl } from "@mapstore/actions/controls";
 import { mapLayoutValuesSelector } from "@mapstore/selectors/maplayout";
 import { createPlugin } from "@mapstore/utils/PluginsUtils";
@@ -27,6 +26,7 @@ import {
     saveMessageSelector,
     saveStatusSelector,
     selectedFeatureCollectionSelector,
+    selectedDescribeFeatureTypeSelector,
     selectedFeatureIndexSelector,
     selectedLayerConfigSelector,
     selectedFeaturePropertiesSelector,
@@ -39,23 +39,8 @@ import { PANEL_EDITOR_CONTROL, PANEL_EDITOR_REDUCER_NAME } from "./constants";
 import init from "./init";
 import "../assets/style.css";
 
-const TooltipButton = tooltip(Button);
-
 const compose = (...functions) => (args) =>
     functions.reduceRight((arg, fn) => fn(arg), args);
-
-const SidebarTool = connect(() => ({}), {
-    click: toggleControl.bind(null, PANEL_EDITOR_CONTROL, null)
-})((props) => (
-    <TooltipButton
-        onClick={props?.click}
-        bsStyle="tray"
-        tooltip={props?.pluginCfg?.tooltip || "Attributes"}
-        className="square-button"
-    >
-        <Glyphicon glyph={props?.pluginCfg?.icon || "th-list"} />
-    </TooltipButton>
-));
 
 const mapStateToProps = (state, ownProps) => ({
     active: isActive(state),
@@ -68,6 +53,7 @@ const mapStateToProps = (state, ownProps) => ({
     selectedFeatureIndex: selectedFeatureIndexSelector(state),
     selectedFeatures: selectedFeatureCollectionSelector(state),
     layerConfig: selectedLayerConfigSelector(state),
+    describeFeatureType: selectedDescribeFeatureTypeSelector(state),
     selectedFeature: selectedFeatureSelector(state),
     selectedAttributes: selectedFeaturePropertiesSelector(state),
     editMode: editModeSelector(state),
@@ -112,8 +98,7 @@ export default createPlugin(name, {
             action: toggleControl.bind(null, PANEL_EDITOR_CONTROL, null),
             doNotHide: true,
             priority: 1,
-            selector: panelEditorSelector,
-            //tool: SidebarTool
+            selector: panelEditorSelector
         },
         BurgerMenu: {
             name,

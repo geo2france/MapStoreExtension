@@ -9,6 +9,9 @@ export const PANEL_EDITOR_SET_SAVE_MESSAGE = "PANEL_EDITOR:SET_SAVE_MESSAGE";
 export const PANEL_EDITOR_SET_VALIDATION_ERRORS = "PANEL_EDITOR:SET_VALIDATION_ERRORS";
 export const PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED = "PANEL_EDITOR:SET_MAPINFO_WAS_ENABLED";
 export const PANEL_EDITOR_SETUP = "PANEL_EDITOR:SETUP";
+export const PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:REQUEST_DESCRIBE_FEATURE_TYPE";
+export const PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:SET_DESCRIBE_FEATURE_TYPE";
+export const PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR = "PANEL_EDITOR:DESCRIBE_FEATURE_TYPE_ERROR";
 export const PANEL_EDITOR_REQUEST_SAVE = "PANEL_EDITOR:REQUEST_SAVE";
 export const PANEL_EDITOR_REQUEST_DELETE = "PANEL_EDITOR:REQUEST_DELETE";
 export const PANEL_EDITOR_REQUEST_START_EDIT = "PANEL_EDITOR:REQUEST_START_EDIT";
@@ -67,6 +70,22 @@ export const setMapInfoWasEnabled = (enabled) => ({
 export const setup = (pluginCfg = {}) => ({
     type: PANEL_EDITOR_SETUP,
     pluginCfg
+});
+
+export const requestDescribeFeatureType = (layerName = "") => ({
+    type: PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE,
+    layerName
+});
+
+export const setDescribeFeatureType = (layerName = "", describeFeatureType = {}) => ({
+    type: PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE,
+    layerName,
+    describeFeatureType
+});
+
+export const describeFeatureTypeError = (layerName = "") => ({
+    type: PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR,
+    layerName
 });
 
 export const requestSave = () => ({

@@ -2,6 +2,17 @@ const isObject = (value) => !!value && typeof value === "object" && !Array.isArr
 
 const DEFAULT_FIELD_TYPE = "string";
 const DEFAULT_AUTO_DATE_FORMAT = "YYYY-MM-DD";
+const WFS_TO_INPUT_TYPE = {
+    "xsd:int": "number",
+    "xsd:integer": "number",
+    "xsd:long": "number",
+    "xsd:short": "number",
+    "xsd:decimal": "number",
+    "xsd:double": "number",
+    "xsd:float": "number",
+    "xsd:date": "date",
+    "xsd:dateTime": "date"
+};
 const normalizeFieldKey = (fieldName = "") =>
     String(fieldName || "")
         .trim()
@@ -163,6 +174,17 @@ export const resolveAttributeName = (fieldName = "", attributes = {}) => {
     ) || fieldName;
 };
 
+const getDescribeFeatureProperties = (describeFeatureType = {}) =>
+    Array.isArray(describeFeatureType?.featureTypes?.[0]?.properties)
+        ? describeFeatureType.featureTypes[0].properties
+        : [];
+
+export const getDescribeFeatureProperty = (fieldName = "", describeFeatureType = {}) =>
+    getDescribeFeatureProperties(describeFeatureType).find((property) =>
+        property?.name === fieldName
+        || normalizeFieldKey(property?.name) === normalizeFieldKey(fieldName)
+    ) || null;
+
 const buildFallbackFieldDefinition = (fieldName, fieldValue) => ({
     name: fieldName,
     label: fieldName,
@@ -173,12 +195,17 @@ const buildFallbackFieldDefinition = (fieldName, fieldValue) => ({
     options: []
 });
 
-export const resolveFieldDefinition = (fieldName, fieldValue, layerConfig = {}) => {
+export const resolveFieldDefinition = (fieldName, fieldValue, layerConfig = {}, describeFeatureType = null) => {
     const fields = getConfiguredFields(layerConfig);
     const autoFields = getAutoFields(layerConfig);
     const configuredField = findConfiguredFieldByName(fields, fieldName);
     const autoField = findConfiguredFieldByName(autoFields, fieldName);
-    const baseDefinition = configuredField || buildFallbackFieldDefinition(fieldName, fieldValue);
+    const describeProperty = getDescribeFeatureProperty(fieldName, describeFeatureType);
+    const describeFieldType = WFS_TO_INPUT_TYPE[describeProperty?.type] || null;
+    const baseDefinition = configuredField || {
+        ...buildFallbackFieldDefinition(fieldName, fieldValue),
+        type: describeFieldType || inferFieldType(fieldValue)
+    };
 
     if (autoField || baseDefinition.type === "auto") {
         return {

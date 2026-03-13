@@ -9,7 +9,10 @@ import {
     PANEL_EDITOR_SET_SAVE_MESSAGE,
     PANEL_EDITOR_SET_VALIDATION_ERRORS,
     PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED,
-    PANEL_EDITOR_SETUP
+    PANEL_EDITOR_SETUP,
+    PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE,
+    PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE,
+    PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR
 } from "./actions";
 
 const initialState = {
@@ -21,7 +24,9 @@ const initialState = {
     saveMessage: "",
     validationErrors: {},
     mapInfoWasEnabled: false,
-    pluginCfg: {}
+    pluginCfg: {},
+    describeFeatureTypes: {},
+    describeFeatureTypeRequests: {}
 };
 
 export default function panelEditor(state = initialState, action = {}) {
@@ -82,6 +87,34 @@ export default function panelEditor(state = initialState, action = {}) {
         return {
             ...state,
             pluginCfg: action.pluginCfg || {}
+        };
+    case PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE:
+        return {
+            ...state,
+            describeFeatureTypeRequests: {
+                ...state.describeFeatureTypeRequests,
+                [action.layerName]: true
+            }
+        };
+    case PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE:
+        return {
+            ...state,
+            describeFeatureTypes: {
+                ...state.describeFeatureTypes,
+                [action.layerName]: action.describeFeatureType || {}
+            },
+            describeFeatureTypeRequests: {
+                ...state.describeFeatureTypeRequests,
+                [action.layerName]: false
+            }
+        };
+    case PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR:
+        return {
+            ...state,
+            describeFeatureTypeRequests: {
+                ...state.describeFeatureTypeRequests,
+                [action.layerName]: false
+            }
         };
     case PANEL_EDITOR_RESET:
         return {

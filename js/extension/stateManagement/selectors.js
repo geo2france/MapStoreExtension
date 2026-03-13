@@ -21,6 +21,16 @@ export const pluginCfgSelector = createSelector(
     (panelEditor) => panelEditor?.pluginCfg || {}
 );
 
+export const describeFeatureTypesSelector = createSelector(
+    panelEditorStateSelector,
+    (panelEditor) => panelEditor?.describeFeatureTypes || {}
+);
+
+export const describeFeatureTypeRequestsSelector = createSelector(
+    panelEditorStateSelector,
+    (panelEditor) => panelEditor?.describeFeatureTypeRequests || {}
+);
+
 export const selectedResponseIndexSelector = createSelector(
     panelEditorStateSelector,
     (panelEditor) => panelEditor?.selectedResponseIndex || 0
@@ -122,6 +132,12 @@ export const selectedLayerConfigSelector = createSelector(
     pluginCfgSelector,
     selectedResponseLayerNameSelector,
     (pluginCfg, selectedLayerName) => findLayerConfigByName(pluginCfg, selectedLayerName)
+);
+
+export const selectedDescribeFeatureTypeSelector = createSelector(
+    describeFeatureTypesSelector,
+    selectedResponseLayerNameSelector,
+    (describeFeatureTypes, selectedLayerName) => describeFeatureTypes?.[selectedLayerName] || null
 );
 
 export const selectedFeatureCollectionSelector = createSelector(

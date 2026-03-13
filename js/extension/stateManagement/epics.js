@@ -1,9 +1,10 @@
 import Rx from "rxjs";
 import { TOGGLE_CONTROL, SET_CONTROL_PROPERTY } from "@mapstore/actions/controls";
 import { UPDATE_MAP_LAYOUT, updateDockPanelsList, updateMapLayout } from "@mapstore/actions/maplayout";
-import { changeMapInfoFormat, changeMapInfoState, featureInfoClick } from "@mapstore/actions/mapInfo";
+import { changeMapInfoFormat, changeMapInfoState, featureInfoClick, LOAD_FEATURE_INFO } from "@mapstore/actions/mapInfo";
 import { CLICK_ON_MAP } from "@mapstore/actions/map";
 import { refreshLayers } from "@mapstore/actions/layers";
+import { getDescribeFeatureType } from "../requests/describeFeatureType";
 import {
     buildDeleteTransactionPayload,
     buildUpdateTransactionPayload,
@@ -26,6 +27,10 @@ import {
     PANEL_EDITOR_REQUEST_START_EDIT,
     PANEL_EDITOR_REQUEST_DELETE,
     PANEL_EDITOR_REQUEST_SAVE,
+    PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX,
+    describeFeatureTypeError,
+    requestDescribeFeatureType,
+    setDescribeFeatureType,
     setFormValues,
     setEditMode,
     setMapInfoWasEnabled,
@@ -40,8 +45,10 @@ import {
     currentLocaleSelector,
     formValuesSelector,
     pluginCfgSelector,
+    describeFeatureTypeRequestsSelector,
     selectedFeatureSelector,
     selectedFeatureIdSelector,
+    selectedDescribeFeatureTypeSelector,
     selectedFeaturePropertiesSelector,
     selectedResponseLayerNameSelector,
     selectedLayerConfigSelector,
@@ -97,14 +104,16 @@ const getEditableFieldChanges = ({
     userRole,
     selectedAttributes = {},
     formValues = {},
-    layerConfig = {}
+    layerConfig = {},
+    describeFeatureType = null
 }) => {
     const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
     return visibleFields.reduce((acc, fieldName) => {
         const fieldDefinition = resolveFieldDefinition(
             fieldName,
             selectedAttributes[fieldName],
-            layerConfig
+            layerConfig,
+            describeFeatureType
         );
 
         if (!canEditField(userRole, fieldDefinition, selectedAttributes[fieldName])) {
@@ -139,6 +148,7 @@ const getTransactionParams = (state = {}) => {
     const formValues = formValuesSelector(state);
     const locale = currentLocaleSelector(state);
     const layerConfig = selectedLayerConfigSelector(state);
+    const describeFeatureType = selectedDescribeFeatureTypeSelector(state);
     const clickPoint = mapInfoClickPointSelector(state);
     const clickLayer = mapInfoClickLayerSelector(state);
     const filterNameList = mapInfoFilterNameListSelector(state);
@@ -160,6 +170,7 @@ const getTransactionParams = (state = {}) => {
         formValues,
         currentUser,
         userRole,
+        describeFeatureType,
         selectedAttributes,
         layerConfig,
         selectedLayerName,
@@ -247,6 +258,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                 formValues,
                 currentUser,
                 userRole,
+                describeFeatureType,
                 selectedAttributes,
                 layerConfig,
                 selectedLayerName,
@@ -275,7 +287,8 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                     userRole,
                     selectedAttributes,
                     formValues,
-                    layerConfig
+                    layerConfig,
+                    describeFeatureType
                 })
                 : { changedAttributes: {}, validationErrors: {} };
             const automaticChanges = action.type === PANEL_EDITOR_REQUEST_SAVE
@@ -473,6 +486,46 @@ export const requestFeatureInfoOnMapClickEpic = (action$, store) =>
             );
         });
 
+const getDescribeFeatureTypeParams = (state = {}) => {
+    const pluginCfg = pluginCfgSelector(state);
+    const selectedLayerName = selectedResponseLayerNameSelector(state);
+    const layerConfig = selectedLayerConfigSelector(state);
+    const describeFeatureTypes = describeFeatureTypeRequestsSelector(state);
+    const wfsUrl = getWfsUrl(pluginCfg, layerConfig);
+
+    return {
+        selectedLayerName,
+        typeName: layerConfig?.name || selectedLayerName,
+        wfsUrl,
+        isPending: !!describeFeatureTypes?.[selectedLayerName],
+        hasDescribeFeatureType: !!selectedDescribeFeatureTypeSelector(state)
+    };
+};
+
+export const loadDescribeFeatureTypeEpic = (action$, store) =>
+    action$
+        .ofType(LOAD_FEATURE_INFO, PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX)
+        .filter(() => isActive(store.getState()))
+        .switchMap(() => {
+            const state = store.getState();
+            const {
+                selectedLayerName,
+                typeName,
+                wfsUrl,
+                isPending,
+                hasDescribeFeatureType
+            } = getDescribeFeatureTypeParams(state);
+
+            if (!selectedLayerName || !typeName || !wfsUrl || isPending || hasDescribeFeatureType) {
+                return Rx.Observable.empty();
+            }
+
+            return Rx.Observable.fromPromise(getDescribeFeatureType(wfsUrl, typeName))
+                .map((describeFeatureType) => setDescribeFeatureType(selectedLayerName, describeFeatureType))
+                .catch(() => Rx.Observable.of(describeFeatureTypeError(selectedLayerName)))
+                .startWith(requestDescribeFeatureType(selectedLayerName));
+        });
+
 // Keep map layout right offset aligned with panel width while the panel is active.
 export const updatePanelEditorLayoutEpic = (action$, store) =>
     action$
@@ -502,5 +555,6 @@ export default {
     startEditWithPermissionsEpic,
     cancelEditPanelEditorEpic,
     requestFeatureInfoOnMapClickEpic,
+    loadDescribeFeatureTypeEpic,
     updatePanelEditorLayoutEpic
 };
