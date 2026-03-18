@@ -1,6 +1,14 @@
 import { createSelector } from "reselect";
 import { PANEL_EDITOR_CONTROL } from "../plugin/constants";
-import { getLayerNameFromResponse, getLayerTitleFromResponse, getLayersList } from "../utiles/attributes";
+import {
+    getConfiguredListFields,
+    getLayerNameFromResponse,
+    getLayerTitleFromResponse,
+    getLayersList,
+    getUniqueFieldValuesFromFeatures,
+    isRemoteListOptions,
+    normalizeSelectOptions
+} from "../utiles/attributes";
 
 export const panelEditorStateSelector = (state) => state?.panelEditor || {};
 export const panelEditorControlSelector = (state) => state?.controls?.[PANEL_EDITOR_CONTROL] || {};
@@ -30,6 +38,16 @@ export const describeFeatureTypesSelector = createSelector(
 export const describeFeatureTypeRequestsSelector = createSelector(
     panelEditorStateSelector,
     (panelEditor) => panelEditor?.describeFeatureTypeRequests || {}
+);
+
+export const listFieldOptionsSelector = createSelector(
+    panelEditorStateSelector,
+    (panelEditor) => panelEditor?.listFieldOptions || {}
+);
+
+export const listFieldOptionsRequestsSelector = createSelector(
+    panelEditorStateSelector,
+    (panelEditor) => panelEditor?.listFieldOptionsRequests || {}
 );
 
 export const selectedResponseIndexSelector = createSelector(
@@ -167,6 +185,39 @@ export const selectedFeatureSelector = createSelector(
 export const selectedFeaturePropertiesSelector = createSelector(
     selectedFeatureSelector,
     (feature) => feature?.properties || {}
+);
+
+export const resolvedListFieldOptionsSelector = createSelector(
+    selectedLayerConfigSelector,
+    selectedFeatureCollectionSelector,
+    selectedFeaturePropertiesSelector,
+    formValuesSelector,
+    selectedResponseLayerNameSelector,
+    listFieldOptionsSelector,
+    (
+        layerConfig,
+        selectedFeatures,
+        selectedAttributes,
+        formValues,
+        selectedLayerName,
+        remoteOptionsByField
+    ) => getConfiguredListFields(layerConfig).reduce((acc, fieldDefinition) => {
+        const fieldName = fieldDefinition.name;
+        const configuredOptions = fieldDefinition.options;
+        const remoteKey = `${selectedLayerName}::${fieldName}`;
+        const baseOptions = Array.isArray(configuredOptions) && configuredOptions.length
+            ? configuredOptions
+            : isRemoteListOptions(configuredOptions)
+                ? (remoteOptionsByField?.[remoteKey] || [])
+                : getUniqueFieldValuesFromFeatures(fieldName, selectedFeatures);
+        const currentValue = formValues?.[fieldName] ?? selectedAttributes?.[fieldName];
+        const optionsWithCurrentValue = currentValue === null || currentValue === undefined || currentValue === ""
+            ? baseOptions
+            : [...baseOptions, currentValue];
+
+        acc[fieldName] = normalizeSelectOptions(optionsWithCurrentValue);
+        return acc;
+    }, {})
 );
 
 export const selectedFeatureIdSelector = createSelector(

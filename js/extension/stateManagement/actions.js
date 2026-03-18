@@ -13,6 +13,9 @@ export const PANEL_EDITOR_SETUP = "PANEL_EDITOR:SETUP";
 export const PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:REQUEST_DESCRIBE_FEATURE_TYPE";
 export const PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE = "PANEL_EDITOR:SET_DESCRIBE_FEATURE_TYPE";
 export const PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR = "PANEL_EDITOR:DESCRIBE_FEATURE_TYPE_ERROR";
+export const PANEL_EDITOR_REQUEST_LIST_FIELD_OPTIONS = "PANEL_EDITOR:REQUEST_LIST_FIELD_OPTIONS";
+export const PANEL_EDITOR_SET_LIST_FIELD_OPTIONS = "PANEL_EDITOR:SET_LIST_FIELD_OPTIONS";
+export const PANEL_EDITOR_LIST_FIELD_OPTIONS_ERROR = "PANEL_EDITOR:LIST_FIELD_OPTIONS_ERROR";
 export const PANEL_EDITOR_REQUEST_SAVE = "PANEL_EDITOR:REQUEST_SAVE";
 export const PANEL_EDITOR_REQUEST_DELETE = "PANEL_EDITOR:REQUEST_DELETE";
 export const PANEL_EDITOR_REQUEST_START_EDIT = "PANEL_EDITOR:REQUEST_START_EDIT";
@@ -92,6 +95,25 @@ export const setDescribeFeatureType = (layerName = "", describeFeatureType = {})
 export const describeFeatureTypeError = (layerName = "") => ({
     type: PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR,
     layerName
+});
+
+export const requestListFieldOptions = (layerName = "", fieldName = "") => ({
+    type: PANEL_EDITOR_REQUEST_LIST_FIELD_OPTIONS,
+    layerName,
+    fieldName
+});
+
+export const setListFieldOptions = (layerName = "", fieldName = "", options = []) => ({
+    type: PANEL_EDITOR_SET_LIST_FIELD_OPTIONS,
+    layerName,
+    fieldName,
+    options
+});
+
+export const listFieldOptionsError = (layerName = "", fieldName = "") => ({
+    type: PANEL_EDITOR_LIST_FIELD_OPTIONS_ERROR,
+    layerName,
+    fieldName
 });
 
 export const requestSave = () => ({

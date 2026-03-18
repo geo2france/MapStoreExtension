@@ -12,7 +12,7 @@ export const isAutoFieldUpdatedOnSave = (autoField = {}) => {
     if (autoField?.onSave) {
         return true;
     }
-    return ["date", "header", "area", "length"].includes(autoField?.type);
+    return ["date", "header", "area", "length", "value"].includes(autoField?.type);
 };
 
 const getValueByPath = (source = {}, path = "") =>
@@ -77,6 +77,10 @@ export const getAutomaticFieldChanges = ({
 
         if (autoField.type === "header") {
             nextValue = resolveHeaderAutoValue(currentUser, autoField.source);
+        }
+
+        if (autoField.type === "value") {
+            nextValue = autoField.source ?? "";
         }
 
         if (autoField.type === "area" || autoField.type === "length") {

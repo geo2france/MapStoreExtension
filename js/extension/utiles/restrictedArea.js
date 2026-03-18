@@ -90,8 +90,11 @@ const parseAreaGeometry = (rawResponse, fallbackWkt) => {
 export const extractAreaGeometry = parseAreaGeometry;
 
 export const isRestrictedAreaOperationAllowed = ({ operation = "WITHIN", featureGeometry, areaGeometry }) => {
+    
     const feature = toFeature(featureGeometry);
+    console.log(feature);
     const area = toFeature(areaGeometry);
+    console.log(area);
     if (!feature || !area) {
         return true;
     }

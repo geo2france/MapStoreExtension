@@ -29,6 +29,8 @@ export const canEditLayer = (userRole, layerConfig = {}) => {
     return isRoleAllowed(userRole, editingRoles);
 };
 
+export const isDeleteEnabled = (layerConfig = {}) => layerConfig?.allowDelete === true;
+
 export const canDeleteFeature = (userRole, layerConfig = {}) => {
     if (isAdminRole(userRole)) {
         return true;

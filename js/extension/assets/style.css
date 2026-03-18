@@ -34,6 +34,10 @@
     margin: 12px 0;
 }
 
+.panel-editor-mode-title .label {
+    font-size: 15px;
+}
+
 .panel-editor-scroll {
     flex: 1;
     min-height: 0;
@@ -56,3 +60,5 @@
 .panel-editor-attributes-table th {
     width: 45%;
 }
+
+

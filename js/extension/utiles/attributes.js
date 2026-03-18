@@ -25,6 +25,13 @@ const normalizeLayerConfig = (layerConfig = {}, layerName = "") => ({
     ...layerConfig
 });
 
+const normalizeFieldOptions = (options) => {
+    if (Array.isArray(options) || isObject(options)) {
+        return options;
+    }
+    return [];
+};
+
 export const getLayersList = (pluginConfig = {}) => {
     const { layers } = pluginConfig || {};
     if (Array.isArray(layers)) {
@@ -85,7 +92,7 @@ const normalizeFieldEntry = (fieldEntry = []) => {
             editable: editable !== false,
             required: !!required,
             roles: Array.isArray(roles) ? roles : [],
-            options: Array.isArray(options) ? options : []
+            options: normalizeFieldOptions(options)
         };
     }
 
@@ -97,7 +104,7 @@ const normalizeFieldEntry = (fieldEntry = []) => {
             editable: fieldEntry.editable !== false,
             required: !!fieldEntry.required,
             roles: Array.isArray(fieldEntry.roles) ? fieldEntry.roles : [],
-            options: Array.isArray(fieldEntry.options) ? fieldEntry.options : []
+            options: normalizeFieldOptions(fieldEntry.options)
         };
     }
 
@@ -136,6 +143,9 @@ export const getConfiguredFields = (layerConfig = {}) => {
     return rawFields.map(normalizeFieldEntry).filter((entry) => !!entry?.name);
 };
 
+export const getConfiguredListFields = (layerConfig = {}) =>
+    getConfiguredFields(layerConfig).filter((field) => field?.type === "list");
+
 export const getAutoFields = (layerConfig = {}) => {
     const rawFields = Array.isArray(layerConfig?.auto) ? layerConfig.auto : [];
     return rawFields.map(normalizeAutoFieldEntry).filter((entry) => !!entry?.name);
@@ -172,6 +182,65 @@ export const resolveAttributeName = (fieldName = "", attributes = {}) => {
         attributeKey === fieldName
         || normalizeFieldKey(attributeKey) === normalizeFieldKey(fieldName)
     ) || fieldName;
+};
+
+export const isRemoteListOptions = (options) =>
+    isObject(options) && typeof options?.url === "string" && typeof options?.field === "string";
+
+const normalizeOptionValue = (value) => {
+    if (value === null || value === undefined) {
+        return "";
+    }
+    return String(value);
+};
+
+export const normalizeSelectOptions = (options = []) => {
+    const rawOptions = Array.isArray(options) ? options : [];
+    const seenValues = new Set();
+
+    return rawOptions.reduce((acc, option) => {
+        if (option === null || option === undefined || option === "") {
+            return acc;
+        }
+
+        const normalizedOption = isObject(option)
+            ? option
+            : { value: option, label: option };
+        const normalizedValue = normalizeOptionValue(normalizedOption.value);
+
+        if (!normalizedValue || seenValues.has(normalizedValue)) {
+            return acc;
+        }
+
+        seenValues.add(normalizedValue);
+        acc.push({
+            value: normalizedOption.value,
+            label: normalizedOption.label ?? normalizedOption.value
+        });
+        return acc;
+    }, []);
+};
+
+export const getUniqueFieldValuesFromFeatures = (fieldName = "", features = []) => {
+    if (!fieldName || !Array.isArray(features)) {
+        return [];
+    }
+
+    const seenValues = new Set();
+    return features.reduce((acc, feature = {}) => {
+        const properties = feature?.properties || {};
+        const attributeName = resolveAttributeName(fieldName, properties);
+        const value = properties?.[attributeName];
+        const normalizedValue = normalizeOptionValue(value);
+
+        if (!normalizedValue || seenValues.has(normalizedValue)) {
+            return acc;
+        }
+
+        seenValues.add(normalizedValue);
+        acc.push(value);
+        return acc;
+    }, []);
 };
 
 const getDescribeFeatureProperties = (describeFeatureType = {}) =>

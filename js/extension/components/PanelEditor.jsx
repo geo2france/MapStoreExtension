@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import ResponsivePanel from "@mapstore/components/misc/panels/ResponsivePanel";
 import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "react-bootstrap";
 import { t } from "../utiles/i18n";
-import { canDeleteFeature, canEditField, canEditLayer } from "../utiles/permissions";
+import { canDeleteFeature, canEditField, canEditLayer, isDeleteEnabled } from "../utiles/permissions";
 import {
     formatFieldDisplayValue,
     getFeatureOptionLabel,
@@ -35,6 +35,7 @@ const PanelEditor = ({
     selectedFeatures,
     selectedFeature,
     selectedAttributes,
+    resolvedListFieldOptions,
     editMode,
     formValues,
     saveStatus,
@@ -50,6 +51,7 @@ const PanelEditor = ({
 }) => {
     const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
     const canEditCurrentLayer = canEditLayer(userRole, layerConfig);
+    const showDeleteButton = isDeleteEnabled(layerConfig);
     const canDeleteCurrentFeature = canDeleteFeature(userRole, layerConfig);
 
     const title = cfg?.title || t(locale, "panelTitle");
@@ -143,15 +145,17 @@ const PanelEditor = ({
                                         >
                                             <Glyphicon glyph="remove" />
                                         </Button>
-                                        <Button
-                                            bsStyle="danger"
-                                            disabled={!canDeleteCurrentFeature || saveStatus === "saving"}
-                                            onClick={onDelete}
-                                            title={t(locale, "delete")}
-                                            aria-label={t(locale, "delete")}
-                                        >
-                                            <Glyphicon glyph="trash" />
-                                        </Button>
+                                        {showDeleteButton ? (
+                                            <Button
+                                                bsStyle="danger"
+                                                disabled={!canDeleteCurrentFeature || saveStatus === "saving"}
+                                                onClick={onDelete}
+                                                title={t(locale, "delete")}
+                                                aria-label={t(locale, "delete")}
+                                            >
+                                                <Glyphicon glyph="trash" />
+                                            </Button>
+                                        ) : null}
                                     </div>
                                 )}
                             </div>
@@ -208,13 +212,13 @@ const PanelEditor = ({
                                                     ? renderInputByType({
                                                         type: fieldDefinition.type,
                                                         value: formValues[fieldName],
-                                                        options: fieldDefinition.options,
+                                                        options: resolvedListFieldOptions[fieldName] || fieldDefinition.options,
                                                         onChange: (value) => onUpdateField(fieldName, value)
                                                     })
                                                     : renderInputByType({
                                                         type: fieldDefinition.type,
                                                         value: formValues[fieldName] ?? selectedAttributes[fieldName] ?? "",
-                                                        options: fieldDefinition.options,
+                                                        options: resolvedListFieldOptions[fieldName] || fieldDefinition.options,
                                                         onChange: () => {},
                                                         disabled: true
                                                     })}
@@ -247,6 +251,7 @@ PanelEditor.propTypes = {
     selectedFeatures: PropTypes.array,
     selectedFeature: PropTypes.object,
     selectedAttributes: PropTypes.object,
+    resolvedListFieldOptions: PropTypes.object,
     editMode: PropTypes.bool,
     formValues: PropTypes.object,
     saveStatus: PropTypes.string,
@@ -276,6 +281,7 @@ PanelEditor.defaultProps = {
     selectedFeatures: [],
     selectedFeature: null,
     selectedAttributes: {},
+    resolvedListFieldOptions: {},
     editMode: false,
     formValues: {},
     saveStatus: "idle",

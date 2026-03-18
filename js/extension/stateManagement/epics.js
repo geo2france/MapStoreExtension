@@ -5,6 +5,7 @@ import { changeMapInfoFormat, changeMapInfoState, featureInfoClick, LOAD_FEATURE
 import { CLICK_ON_MAP } from "@mapstore/actions/map";
 import { refreshLayers } from "@mapstore/actions/layers";
 import { getDescribeFeatureType } from "../requests/describeFeatureType";
+import { getListFieldOptions } from "../requests/listFieldOptions";
 import {
     buildDeleteTransactionPayload,
     buildUpdateTransactionPayload,
@@ -12,10 +13,12 @@ import {
 } from "../requests/wfsTransaction";
 import { getAreaOfCompetence } from "../requests/restrictedArea";
 import {
+    getConfiguredListFields,
     getLayersList,
     resolveAttributeName,
     getVisibleFieldNames,
     getWfsUrl,
+    isRemoteListOptions,
     resolveFieldDefinition
 } from "../utiles/attributes";
 import { getAutomaticFieldChanges } from "../utiles/autoFields";
@@ -29,10 +32,13 @@ import {
     PANEL_EDITOR_REQUEST_SAVE,
     PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX,
     describeFeatureTypeError,
+    listFieldOptionsError,
     requestDescribeFeatureType,
+    requestListFieldOptions,
     resetPanelEditorState,
     setMapInfoPreviousFormat,
     setDescribeFeatureType,
+    setListFieldOptions,
     setFormValues,
     setEditMode,
     setMapInfoWasEnabled,
@@ -49,6 +55,8 @@ import {
     formValuesSelector,
     pluginCfgSelector,
     describeFeatureTypeRequestsSelector,
+    listFieldOptionsRequestsSelector,
+    listFieldOptionsSelector,
     selectedFeatureSelector,
     selectedFeatureIdSelector,
     selectedDescribeFeatureTypeSelector,
@@ -509,6 +517,27 @@ const getDescribeFeatureTypeParams = (state = {}) => {
     };
 };
 
+const getListFieldOptionsParams = (state = {}) => {
+    const selectedLayerName = selectedResponseLayerNameSelector(state);
+    const layerConfig = selectedLayerConfigSelector(state);
+    const pendingRequests = listFieldOptionsRequestsSelector(state);
+    const loadedOptions = listFieldOptionsSelector(state);
+
+    return getConfiguredListFields(layerConfig)
+        .filter((field) => isRemoteListOptions(field?.options))
+        .map((field) => {
+            const requestKey = `${selectedLayerName}::${field.name}`;
+            return {
+                layerName: selectedLayerName,
+                fieldName: field.name,
+                url: field.options.url,
+                sourceField: field.options.field,
+                isPending: !!pendingRequests?.[requestKey],
+                hasOptions: Array.isArray(loadedOptions?.[requestKey])
+            };
+        });
+};
+
 export const loadDescribeFeatureTypeEpic = (action$, store) =>
     action$
         .ofType(LOAD_FEATURE_INFO, PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX)
@@ -531,6 +560,29 @@ export const loadDescribeFeatureTypeEpic = (action$, store) =>
                 .map((describeFeatureType) => setDescribeFeatureType(selectedLayerName, describeFeatureType))
                 .catch(() => Rx.Observable.of(describeFeatureTypeError(selectedLayerName)))
                 .startWith(requestDescribeFeatureType(selectedLayerName));
+        });
+
+export const loadListFieldOptionsEpic = (action$, store) =>
+    action$
+        .ofType(LOAD_FEATURE_INFO, PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX)
+        .filter(() => isActive(store.getState()))
+        .switchMap(() => {
+            const requests = getListFieldOptionsParams(store.getState())
+                .filter(({ layerName, fieldName, url, sourceField, isPending, hasOptions }) =>
+                    !!layerName && !!fieldName && !!url && !!sourceField && !isPending && !hasOptions
+                );
+
+            if (!requests.length) {
+                return Rx.Observable.empty();
+            }
+
+            return Rx.Observable.from(requests)
+                .mergeMap(({ layerName, fieldName, url, sourceField }) =>
+                    Rx.Observable.fromPromise(getListFieldOptions(url, sourceField))
+                        .map((options) => setListFieldOptions(layerName, fieldName, options))
+                        .catch(() => Rx.Observable.of(listFieldOptionsError(layerName, fieldName)))
+                        .startWith(requestListFieldOptions(layerName, fieldName))
+                );
         });
 
 // Keep map layout right offset aligned with panel width while the panel is active.
@@ -563,5 +615,6 @@ export default {
     cancelEditPanelEditorEpic,
     requestFeatureInfoOnMapClickEpic,
     loadDescribeFeatureTypeEpic,
+    loadListFieldOptionsEpic,
     updatePanelEditorLayoutEpic
 };

@@ -13,7 +13,10 @@ import {
     PANEL_EDITOR_SETUP,
     PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE,
     PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE,
-    PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR
+    PANEL_EDITOR_DESCRIBE_FEATURE_TYPE_ERROR,
+    PANEL_EDITOR_REQUEST_LIST_FIELD_OPTIONS,
+    PANEL_EDITOR_SET_LIST_FIELD_OPTIONS,
+    PANEL_EDITOR_LIST_FIELD_OPTIONS_ERROR
 } from "./actions";
 
 const initialState = {
@@ -28,7 +31,9 @@ const initialState = {
     mapInfoPreviousFormat: "text/plain",
     pluginCfg: {},
     describeFeatureTypes: {},
-    describeFeatureTypeRequests: {}
+    describeFeatureTypeRequests: {},
+    listFieldOptions: {},
+    listFieldOptionsRequests: {}
 };
 
 export default function panelEditor(state = initialState, action = {}) {
@@ -121,6 +126,34 @@ export default function panelEditor(state = initialState, action = {}) {
             describeFeatureTypeRequests: {
                 ...state.describeFeatureTypeRequests,
                 [action.layerName]: false
+            }
+        };
+    case PANEL_EDITOR_REQUEST_LIST_FIELD_OPTIONS:
+        return {
+            ...state,
+            listFieldOptionsRequests: {
+                ...state.listFieldOptionsRequests,
+                [`${action.layerName}::${action.fieldName}`]: true
+            }
+        };
+    case PANEL_EDITOR_SET_LIST_FIELD_OPTIONS:
+        return {
+            ...state,
+            listFieldOptions: {
+                ...state.listFieldOptions,
+                [`${action.layerName}::${action.fieldName}`]: action.options || []
+            },
+            listFieldOptionsRequests: {
+                ...state.listFieldOptionsRequests,
+                [`${action.layerName}::${action.fieldName}`]: false
+            }
+        };
+    case PANEL_EDITOR_LIST_FIELD_OPTIONS_ERROR:
+        return {
+            ...state,
+            listFieldOptionsRequests: {
+                ...state.listFieldOptionsRequests,
+                [`${action.layerName}::${action.fieldName}`]: false
             }
         };
     case PANEL_EDITOR_RESET:
