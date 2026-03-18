@@ -29,4 +29,5 @@ The plugin applies permissions at layer and field levels.
 - A `required` empty field becomes editable to allow mandatory input.
 - Delete button is shown only when `allowDelete` is `true`.
 - When the button is shown, it is enabled only if delete permission is granted.
-- Hidden fields (`hidden`) are not rendered in the UI.
+- In read mode, hidden fields (`hidden`) are not rendered.
+- In edit mode, a `hidden` field is rendered only if it is declared in `fields`.

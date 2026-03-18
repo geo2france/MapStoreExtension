@@ -13,10 +13,10 @@ import {
 } from "../requests/wfsTransaction";
 import { getAreaOfCompetence } from "../requests/restrictedArea";
 import {
+    getEditableVisibleFieldNames,
     getConfiguredListFields,
     getLayersList,
     resolveAttributeName,
-    getVisibleFieldNames,
     getWfsUrl,
     isRemoteListOptions,
     resolveFieldDefinition
@@ -119,7 +119,7 @@ const getEditableFieldChanges = ({
     layerConfig = {},
     describeFeatureType = null
 }) => {
-    const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
+    const visibleFields = getEditableVisibleFieldNames(selectedAttributes, layerConfig);
     return visibleFields.reduce((acc, fieldName) => {
         const fieldDefinition = resolveFieldDefinition(
             fieldName,

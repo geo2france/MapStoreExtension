@@ -29,4 +29,5 @@ Le plugin applique les droits par couche et par champ.
 - Un champ `required` vide devient éditable pour permettre la saisie obligatoire.
 - Le bouton supprimer est affiché uniquement si `allowDelete` vaut `true`.
 - Si le bouton est affiché, il reste activé uniquement si l’utilisateur possède le droit de suppression.
-- Les champs masqués (`hidden`) ne sont pas affichés dans l’interface.
+- En lecture, les champs masqués (`hidden`) ne sont pas affichés.
+- En écriture, un champ `hidden` est affiché uniquement s’il est déclaré dans `fields`.

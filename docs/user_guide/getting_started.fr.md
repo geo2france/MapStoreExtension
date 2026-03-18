@@ -20,7 +20,7 @@ La configuration se fait dans `localConfig.json` sous le plugin `panel_editor`.
 |---|---|---:|---|
 | `featureFieldLabel` | `string` | non | Champ utilisé dans la liste des entités. |
 | `featureFielLabel` | `string` | non | Alias toléré (compatibilité). |
-| `hidden` | `string[]` | non | Champs masqués en lecture/édition. |
+| `hidden` | `string[]` | non | Champs masqués en lecture. En écriture, un champ `hidden` reste masqué sauf s’il est aussi déclaré dans `fields`. |
 | `fields` | `array` | non | Définition fine des champs (voir tableau suivant). |
 | `auto` | `array` | non | Champs renseignés automatiquement à la sauvegarde. |
 | `edit` / `editingRoles` | `string[]` | non | Rôles autorisés à éditer la couche. |
@@ -82,6 +82,7 @@ Règles :
 - Si `options` est un objet `{ "url": "...", "field": "..." }`, le plugin lit la réponse JSON et extrait les valeurs uniques du champ indiqué.
 - Si `options` est vide ou absent pour un champ `list`, le plugin propose les valeurs uniques déjà présentes sur ce champ dans les entités de la couche chargée.
 - Les doublons et valeurs vides sont filtrés.
+- Un champ présent dans `hidden` peut être réaffiché en mode édition s’il est explicitement déclaré dans `fields`.
 
 ## 4) Configuration des champs automatiques (`auto`)
 
@@ -161,6 +162,8 @@ Règles :
 - `ADMIN` / `ROLE_ADMIN` a tous les droits.
 - Si un champ est `required` et vide, il reste éditable même si `editable` vaut `false`.
 - Les champs `auto` restent en lecture seule et sont valorisés au moment de la sauvegarde.
+- Les champs `hidden` sont toujours masqués en lecture.
+- En mode édition, un champ `hidden` n’est affiché que s’il est déclaré dans `fields`.
 - Le bouton supprimer n’est affiché que si `allowDelete` vaut `true`.
 - Les unités par défaut des calculs géométriques sont `m²` pour `area` et `m` pour `length`.
 - La clé de restriction spatiale utilisée par le plugin est `restrictedArea`.

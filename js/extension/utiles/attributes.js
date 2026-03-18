@@ -292,8 +292,22 @@ export const resolveFieldDefinition = (fieldName, fieldValue, layerConfig = {}, 
 
 export const getVisibleFieldNames = (attributes = {}, layerConfig = {}) => {
     const hiddenFields = getHiddenFields(layerConfig);
-    // Visibility is only controlled by the hidden list; editability is resolved later.
     return Object.keys(attributes).filter((fieldName) => !hiddenFields.includes(fieldName));
+};
+
+export const getEditableVisibleFieldNames = (attributes = {}, layerConfig = {}) => {
+    const hiddenFields = getHiddenFields(layerConfig);
+    const configuredFields = getConfiguredFields(layerConfig);
+    const configuredHiddenFields = configuredFields
+        .map((field) => resolveAttributeName(field.name, attributes))
+        .filter((fieldName) => !!fieldName && hiddenFields.includes(fieldName));
+
+    const visibleFields = getVisibleFieldNames(attributes, layerConfig);
+    const orderedConfiguredHiddenFields = configuredHiddenFields.filter((fieldName, index, fieldNames) =>
+        fieldNames.indexOf(fieldName) === index
+    );
+
+    return [...visibleFields, ...orderedConfiguredHiddenFields];
 };
 
 export const getWfsUrl = (pluginConfig = {}, layerConfig = {}) => {

@@ -5,6 +5,7 @@ import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "re
 import { t } from "../utiles/i18n";
 import { canDeleteFeature, canEditField, canEditLayer, isDeleteEnabled } from "../utiles/permissions";
 import {
+    getEditableVisibleFieldNames,
     formatFieldDisplayValue,
     getFeatureOptionLabel,
     getVisibleFieldNames,
@@ -49,7 +50,9 @@ const PanelEditor = ({
     onSave,
     onDelete
 }) => {
-    const visibleFields = getVisibleFieldNames(selectedAttributes, layerConfig);
+    const visibleFields = editMode
+        ? getEditableVisibleFieldNames(selectedAttributes, layerConfig)
+        : getVisibleFieldNames(selectedAttributes, layerConfig);
     const canEditCurrentLayer = canEditLayer(userRole, layerConfig);
     const showDeleteButton = isDeleteEnabled(layerConfig);
     const canDeleteCurrentFeature = canDeleteFeature(userRole, layerConfig);

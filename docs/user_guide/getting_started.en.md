@@ -20,7 +20,7 @@ Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 |---|---|---:|---|
 | `featureFieldLabel` | `string` | no | Field used in feature selector labels. |
 | `featureFielLabel` | `string` | no | Tolerated alias (compatibility). |
-| `hidden` | `string[]` | no | Fields hidden in read/edit views. |
+| `hidden` | `string[]` | no | Fields hidden in read mode. In edit mode, a `hidden` field stays hidden unless it is also declared in `fields`. |
 | `fields` | `array` | no | Detailed field definition (see next table). |
 | `auto` | `array` | no | Fields filled automatically on save. |
 | `edit` / `editingRoles` | `string[]` | no | Roles allowed to edit the layer. |
@@ -82,6 +82,7 @@ Rules:
 - If `options` is an object `{ "url": "...", "field": "..." }`, the plugin reads the JSON response and extracts unique values from the configured field.
 - If `options` is empty or missing for a `list` field, the plugin proposes unique values already present for that field in the loaded layer features.
 - Duplicate and empty values are filtered out.
+- A field listed in `hidden` can be shown again in edit mode when it is explicitly declared in `fields`.
 
 ## 4) Automatic field configuration (`auto`)
 
@@ -161,6 +162,8 @@ Rules:
 - `ADMIN` / `ROLE_ADMIN` has full permissions.
 - If a field is `required` and empty, it stays editable even if `editable` is `false`.
 - `auto` fields stay read-only and are populated at save time.
+- `hidden` fields are always hidden in read mode.
+- In edit mode, a `hidden` field is shown only if it is declared in `fields`.
 - The delete button is shown only when `allowDelete` is `true`.
 - Default units for geometry-based calculations are `m²` for `area` and `m` for `length`.
 - Spatial restriction key supported by the plugin is `restrictedArea`.
