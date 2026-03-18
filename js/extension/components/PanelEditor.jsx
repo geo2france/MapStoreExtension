@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import ResponsivePanel from "@mapstore/components/misc/panels/ResponsivePanel";
 import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "react-bootstrap";
 import { t } from "../utiles/i18n";
-import { canDeleteFeature, canEditField, canEditLayer, isDeleteEnabled } from "../utiles/permissions";
+import { canDeleteFeature, canEditField, isDeleteEnabled } from "../utiles/permissions";
 import {
     getEditableVisibleFieldNames,
     formatFieldDisplayValue,
@@ -30,6 +30,7 @@ const PanelEditor = ({
     cfg,
     locale,
     userRole,
+    canStartEdit,
     responseOptions,
     selectedResponseIndex,
     selectedFeatureIndex,
@@ -53,7 +54,6 @@ const PanelEditor = ({
     const visibleFields = editMode
         ? getEditableVisibleFieldNames(selectedAttributes, layerConfig)
         : getVisibleFieldNames(selectedAttributes, layerConfig);
-    const canEditCurrentLayer = canEditLayer(userRole, layerConfig);
     const showDeleteButton = isDeleteEnabled(layerConfig);
     const canDeleteCurrentFeature = canDeleteFeature(userRole, layerConfig);
 
@@ -118,17 +118,18 @@ const PanelEditor = ({
                                 </div>
                             ) : null}
                             <div className="panel-editor-toolbar">
-                                {!editMode ? (
+                                {!editMode && canStartEdit ? (
                                     <Button
                                         bsStyle="primary"
-                                        disabled={!canEditCurrentLayer || !selectedFeature}
+                                        disabled={!selectedFeature}
                                         onClick={onStartEdit}
                                         title={t(locale, "switchToEdit")}
                                         aria-label={t(locale, "switchToEdit")}
                                     >
                                         <Glyphicon glyph="pencil" />
                                     </Button>
-                                ) : (
+                                ) : null}
+                                {editMode ? (
                                     <div className="panel-editor-actions">
                                         <Button
                                             bsStyle="success"
@@ -160,7 +161,7 @@ const PanelEditor = ({
                                             </Button>
                                         ) : null}
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                         </div>
 
@@ -248,6 +249,7 @@ PanelEditor.propTypes = {
     cfg: PropTypes.object,
     locale: PropTypes.string,
     userRole: PropTypes.string,
+    canStartEdit: PropTypes.bool,
     responseOptions: PropTypes.array,
     selectedResponseIndex: PropTypes.number,
     selectedFeatureIndex: PropTypes.number,
@@ -278,6 +280,7 @@ PanelEditor.defaultProps = {
     cfg: {},
     locale: "en-US",
     userRole: "",
+    canStartEdit: false,
     responseOptions: [],
     selectedResponseIndex: 0,
     selectedFeatureIndex: 0,

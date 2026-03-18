@@ -85,6 +85,16 @@ export const validationErrorsSelector = createSelector(
     (panelEditor) => panelEditor?.validationErrors || {}
 );
 
+export const editPermissionSelector = createSelector(
+    panelEditorStateSelector,
+    (panelEditor) => panelEditor?.editPermission || { allowed: false, pending: false }
+);
+
+export const canStartEditSelector = createSelector(
+    editPermissionSelector,
+    (editPermission) => !!editPermission?.allowed
+);
+
 export const mapInfoWasEnabledSelector = createSelector(
     panelEditorStateSelector,
     (panelEditor) => !!panelEditor?.mapInfoWasEnabled
@@ -136,6 +146,11 @@ export const selectedResponseSelector = createSelector(
     panelEditorResponsesSelector,
     safeSelectedResponseIndexSelector,
     (responses = [], selectedResponseIndex = 0) => responses[selectedResponseIndex] || null
+);
+
+export const selectedResponseFeaturesCrsSelector = createSelector(
+    selectedResponseSelector,
+    (response) => response?.layerMetadata?.featuresCrs || null
 );
 
 export const selectedResponseLayerNameSelector = createSelector(

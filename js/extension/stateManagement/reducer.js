@@ -10,6 +10,7 @@ import {
     PANEL_EDITOR_SET_VALIDATION_ERRORS,
     PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED,
     PANEL_EDITOR_SET_MAPINFO_PREVIOUS_FORMAT,
+    PANEL_EDITOR_SET_EDIT_PERMISSION,
     PANEL_EDITOR_SETUP,
     PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE,
     PANEL_EDITOR_SET_DESCRIBE_FEATURE_TYPE,
@@ -27,6 +28,10 @@ const initialState = {
     saveStatus: "idle",
     saveMessage: "",
     validationErrors: {},
+    editPermission: {
+        allowed: false,
+        pending: false
+    },
     mapInfoWasEnabled: false,
     mapInfoPreviousFormat: "text/plain",
     pluginCfg: {},
@@ -84,6 +89,14 @@ export default function panelEditor(state = initialState, action = {}) {
         return {
             ...state,
             validationErrors: action.errors || {}
+        };
+    case PANEL_EDITOR_SET_EDIT_PERMISSION:
+        return {
+            ...state,
+            editPermission: {
+                allowed: !!action.allowed,
+                pending: !!action.pending
+            }
         };
     case PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED:
         return {

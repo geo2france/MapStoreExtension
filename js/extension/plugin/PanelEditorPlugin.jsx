@@ -19,6 +19,7 @@ import {
     updateFormValue
 } from "../stateManagement/actions";
 import {
+    canStartEditSelector,
     editModeSelector,
     formValuesSelector,
     isActive,
@@ -49,6 +50,7 @@ const mapStateToProps = (state, ownProps) => ({
     dockStyle: mapLayoutValuesSelector(state, { height: true, right: true }, true),
     locale: state?.locale?.current || "en-US",
     userRole: userRoleSelector(state),
+    canStartEdit: canStartEditSelector(state),
     responseOptions: responseOptionsSelector(state),
     selectedResponseIndex: selectedResponseIndexSelector(state),
     selectedFeatureIndex: selectedFeatureIndexSelector(state),
