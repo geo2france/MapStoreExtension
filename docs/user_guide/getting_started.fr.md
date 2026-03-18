@@ -28,7 +28,7 @@ La configuration se fait dans `localConfig.json` sous le plugin `panel_editor`.
 | `delete` / `deletionRoles` | `string[]` | non | Rôles autorisés à supprimer. |
 | `wfsUrl` | `string` | non | URL WFS spécifique à la couche. |
 | `idField` | `string` | non | Nom du champ identifiant (défaut: `id`). |
-| `restrictedArea` | `object` | non | Restriction spatiale d’édition (zone de compétence). |
+| `restrictedArea` | `object` | non | Restriction spatiale d’édition (zone de compétence) basée sur un `wkt`/`wtk` ou sur le JSON retourné par une `url`. |
 
 ## 3) Configuration par champ (`fields`)
 
@@ -42,7 +42,7 @@ Chaque entrée de `fields` accepte le format compact:
 | `2` | `type` | `string` | Type UI (`string`, `number`, `date`, `list`, etc.). |
 | `3` | `editable` | `boolean` | Champ éditable ou non. |
 | `4` | `required` | `boolean` | Champ obligatoire. |
-| `5` | `roles` | `string[]` | Rôles autorisés à éditer ce champ. |
+| `5` | `roles` | `string[]` | Rôles autorisés à éditer ce champ. En mode édition, si l’utilisateur n’a pas l’un de ces rôles, le champ reste affiché mais en lecture seule. |
 | `6` | `options` | `array \| object` | Valeurs pour listes (`list`) via tableau statique, URL JSON distante, ou tableau vide pour auto-détection depuis la couche. |
 
 ### Cas supportés pour `type: "list"`
@@ -106,6 +106,45 @@ Règles :
 - Si `type` vaut `length`, la valeur est calculée à partir de la géométrie de la feature. Pour une ligne, c’est la longueur. Pour un polygone, c’est le périmètre. L’unité par défaut est le mètre (`m`).
 - Les champs `auto` sont injectés dans la transaction WFS-T même s’ils sont aussi présents dans `hidden`.
 
+## 5) Restriction spatiale (`restrictedArea`)
+
+La clé `restrictedArea` permet de limiter l’accès au mode édition selon une comparaison spatiale entre la géométrie de la feature sélectionnée et une zone de compétence.
+
+Exemple avec URL JSON :
+
+```json
+"restrictedArea": {
+  "url": "/my/custom/area",
+  "operation": "INTERSECTS"
+}
+```
+
+Exemple avec WKT fourni en configuration :
+
+```json
+"restrictedArea": {
+  "wtk": "POLYGON((...))",
+  "operation": "WITHIN"
+}
+```
+
+Clés supportées :
+
+- `url` : URL libre retournant un JSON exploitable par le plugin
+- `wkt` / `wtk` : géométrie fournie directement dans la config
+- `operation` : `WITHIN`, `INTERSECTS` ou `CONTAINS`
+- `allowedRoles` : rôles qui ignorent cette restriction spatiale
+
+Règles :
+
+- La géométrie de contrôle provient soit du `wkt` / `wtk`, soit du JSON retourné par `url`.
+- Aucun appel HTTP n’est fait si un `wkt` / `wtk` est fourni.
+- Si aucun `url`, `wkt` ou `wtk` n’est fourni, aucune géométrie de contrôle n’est chargée.
+- Le `wkt` / `wtk` est interprété en `EPSG:4326`.
+- Si nécessaire, cette géométrie est reprojetée vers le CRS des features Identify avant la comparaison spatiale.
+- Si la comparaison spatiale échoue pour l’opération configurée, le bouton `Modifier` n’est pas affiché.
+- Si l’utilisateur possède un rôle présent dans `allowedRoles`, la restriction spatiale est ignorée.
+
 ## Exemple complet (global + couche + champs)
 
 ```json
@@ -164,6 +203,7 @@ Règles :
 - Les champs `auto` restent en lecture seule et sont valorisés au moment de la sauvegarde.
 - Les champs `hidden` sont toujours masqués en lecture.
 - En mode édition, un champ `hidden` n’est affiché que s’il est déclaré dans `fields`.
+- Le bouton `Modifier` n’est affiché que si l’utilisateur peut réellement éditer la feature, y compris vis-à-vis de `restrictedArea`.
 - Le bouton supprimer n’est affiché que si `allowDelete` vaut `true`.
 - Les unités par défaut des calculs géométriques sont `m²` pour `area` et `m` pour `length`.
 - La clé de restriction spatiale utilisée par le plugin est `restrictedArea`.

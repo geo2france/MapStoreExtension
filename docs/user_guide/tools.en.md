@@ -25,6 +25,7 @@ The plugin applies permissions at layer and field levels.
 ## UI behavior based on permissions
 
 - If the user cannot edit the layer, the pencil button is disabled.
+- If the user fails the `restrictedArea` spatial check, the `Edit` button is not shown.
 - In edit mode, unauthorized fields are still shown but stay read-only.
 - A `required` empty field becomes editable to allow mandatory input.
 - Delete button is shown only when `allowDelete` is `true`.

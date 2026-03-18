@@ -28,7 +28,7 @@ Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 | `delete` / `deletionRoles` | `string[]` | no | Roles allowed to delete. |
 | `wfsUrl` | `string` | no | Layer-specific WFS URL. |
 | `idField` | `string` | no | Identifier field name (default: `id`). |
-| `restrictedArea` | `object` | no | Spatial edit restriction (area of competence). |
+| `restrictedArea` | `object` | no | Spatial edit restriction (area of competence) based on either a `wkt`/`wtk` or the JSON returned by a `url`. |
 
 ## 3) Field configuration (`fields`)
 
@@ -42,7 +42,7 @@ Each `fields` entry accepts compact format:
 | `2` | `type` | `string` | UI type (`string`, `number`, `date`, `list`, etc.). |
 | `3` | `editable` | `boolean` | Editable or read-only. |
 | `4` | `required` | `boolean` | Required field. |
-| `5` | `roles` | `string[]` | Roles allowed to edit this field. |
+| `5` | `roles` | `string[]` | Roles allowed to edit this field. In edit mode, if the user does not have one of these roles, the field stays visible but read-only. |
 | `6` | `options` | `array \| object` | Values for `list` inputs from a static array, a remote JSON URL, or an empty array for automatic layer-based values. |
 
 ### Supported cases for `type: "list"`
@@ -106,6 +106,45 @@ Rules:
 - If `type` is `length`, the value is computed from the feature geometry. For a line, this is the length. For a polygon, this is the perimeter. Default unit is meters (`m`).
 - `auto` fields are injected into the WFS-T transaction even if they are also listed in `hidden`.
 
+## 5) Spatial restriction (`restrictedArea`)
+
+The `restrictedArea` key limits access to edit mode using a spatial comparison between the selected feature geometry and an area of competence.
+
+Example with a JSON URL:
+
+```json
+"restrictedArea": {
+  "url": "/my/custom/area",
+  "operation": "INTERSECTS"
+}
+```
+
+Example with a WKT provided in configuration:
+
+```json
+"restrictedArea": {
+  "wtk": "POLYGON((...))",
+  "operation": "WITHIN"
+}
+```
+
+Supported keys:
+
+- `url`: any URL returning JSON that the plugin can parse
+- `wkt` / `wtk`: geometry provided directly in configuration
+- `operation`: `WITHIN`, `INTERSECTS`, or `CONTAINS`
+- `allowedRoles`: roles that bypass this spatial restriction
+
+Rules:
+
+- The control geometry comes either from `wkt` / `wtk` or from the JSON returned by `url`.
+- No HTTP call is made if a `wkt` / `wtk` is provided.
+- If no `url`, `wkt`, or `wtk` is provided, no control geometry is loaded.
+- `wkt` / `wtk` is interpreted as `EPSG:4326`.
+- When needed, that geometry is reprojected to the Identify features CRS before spatial comparison.
+- If the spatial check fails for the configured operation, the `Edit` button is not shown.
+- If the user has a role listed in `allowedRoles`, the spatial restriction is bypassed.
+
 ## Complete example (global + layer + fields)
 
 ```json
@@ -164,6 +203,7 @@ Rules:
 - `auto` fields stay read-only and are populated at save time.
 - `hidden` fields are always hidden in read mode.
 - In edit mode, a `hidden` field is shown only if it is declared in `fields`.
+- The `Edit` button is shown only when the user can actually edit the feature, including `restrictedArea` validation.
 - The delete button is shown only when `allowDelete` is `true`.
 - Default units for geometry-based calculations are `m²` for `area` and `m` for `length`.
 - Spatial restriction key supported by the plugin is `restrictedArea`.

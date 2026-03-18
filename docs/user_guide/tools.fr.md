@@ -25,6 +25,7 @@ Le plugin applique les droits par couche et par champ.
 ## Gestion d’interface selon les droits
 
 - Si l’utilisateur ne peut pas éditer la couche, le bouton stylo est désactivé.
+- Si l’utilisateur échoue au contrôle spatial `restrictedArea`, le bouton `Modifier` n’est pas affiché.
 - En mode édition, un champ non autorisé reste affiché mais en lecture seule.
 - Un champ `required` vide devient éditable pour permettre la saisie obligatoire.
 - Le bouton supprimer est affiché uniquement si `allowDelete` vaut `true`.
