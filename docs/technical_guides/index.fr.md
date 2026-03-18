@@ -47,7 +47,9 @@ Le zip d’extension est généré dans `dist/`.
 - Le nom d’extension est défini dans `config.js`.
 - La configuration d’exécution se fait dans `configs/localConfig.json`.
 - Les champs automatiques (`auto`) sont résolus dans les helpers, puis injectés dans la transaction au moment de la sauvegarde.
-- Les types `auto` supportés incluent `header`, `date`, `area` et `length`. Les unités par défaut sont `m²` pour `area` et `m` pour `length`.
+- Les types `auto` supportés incluent `header`, `date`, `area`, `length` et `value`. Les unités par défaut sont `m²` pour `area` et `m` pour `length`.
+- Les champs `list` acceptent une liste statique, une source JSON distante `{ url, field }`, ou une liste vide pour déduire les valeurs depuis les entités déjà chargées.
+- Le bouton de suppression dépend d’un double contrôle : visibilité via `allowDelete`, puis activation selon les droits `delete` / `deletionRoles`.
 - La couche `requests` valide aussi le contenu XML des réponses WFS-T : un HTTP `200` contenant une erreur OGC/WFS est renvoyé comme erreur applicative.
 
 ## Référence complémentaire

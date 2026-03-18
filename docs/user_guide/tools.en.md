@@ -7,6 +7,7 @@ The plugin applies permissions at layer and field levels.
 - `ADMIN` (or `ROLE_ADMIN`) has full access.
 - Without `edit`/`editingRoles`, layer editing is allowed.
 - Without `delete`/`deletionRoles`, delete follows layer edit permission.
+- If `allowDelete` is missing or set to `false`, the delete button is hidden.
 
 ## Field rules
 
@@ -26,5 +27,6 @@ The plugin applies permissions at layer and field levels.
 - If the user cannot edit the layer, the pencil button is disabled.
 - In edit mode, unauthorized fields are still shown but stay read-only.
 - A `required` empty field becomes editable to allow mandatory input.
-- Delete button is enabled only when delete permission is granted.
+- Delete button is shown only when `allowDelete` is `true`.
+- When the button is shown, it is enabled only if delete permission is granted.
 - Hidden fields (`hidden`) are not rendered in the UI.

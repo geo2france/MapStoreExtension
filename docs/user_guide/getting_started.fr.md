@@ -24,6 +24,7 @@ La configuration se fait dans `localConfig.json` sous le plugin `panel_editor`.
 | `fields` | `array` | non | Définition fine des champs (voir tableau suivant). |
 | `auto` | `array` | non | Champs renseignés automatiquement à la sauvegarde. |
 | `edit` / `editingRoles` | `string[]` | non | Rôles autorisés à éditer la couche. |
+| `allowDelete` | `boolean` | non | Affiche le bouton de suppression uniquement si la valeur est `true`. |
 | `delete` / `deletionRoles` | `string[]` | non | Rôles autorisés à supprimer. |
 | `wfsUrl` | `string` | non | URL WFS spécifique à la couche. |
 | `idField` | `string` | non | Nom du champ identifiant (défaut: `id`). |
@@ -38,11 +39,49 @@ Chaque entrée de `fields` accepte le format compact:
 |---:|---|---|---|
 | `0` | `name` | `string` | Nom du champ (clé attribut). |
 | `1` | `label` | `string` | Libellé affiché. |
-| `2` | `type` | `string` | Type UI (`string`, `number`, `date`, `select`, etc.). |
+| `2` | `type` | `string` | Type UI (`string`, `number`, `date`, `list`, etc.). |
 | `3` | `editable` | `boolean` | Champ éditable ou non. |
 | `4` | `required` | `boolean` | Champ obligatoire. |
 | `5` | `roles` | `string[]` | Rôles autorisés à éditer ce champ. |
-| `6` | `options` | `array` | Valeurs pour listes (`select`). |
+| `6` | `options` | `array \| object` | Valeurs pour listes (`list`) via tableau statique, URL JSON distante, ou tableau vide pour auto-détection depuis la couche. |
+
+### Cas supportés pour `type: "list"`
+
+1. Liste statique
+
+```json
+["dpt", "Département", "list", true, false, [], [75, 77, 78, 91, 92, 93, 94, 95]]
+```
+
+2. Lecture automatique des valeurs existantes du champ dans la couche courante
+
+```json
+["dpt", "Département", "list", true, false, [], []]
+```
+
+3. Lecture depuis une URL JSON WFS ou OGC API Features
+
+```json
+[
+  "dpt",
+  "Département",
+  "list",
+  true,
+  false,
+  [],
+  {
+    "url": "https://example.org/collections/idf:admin_dpt_idf/items?f=application/json&properties=DPT",
+    "field": "DPT"
+  }
+]
+```
+
+Règles :
+
+- Si `options` contient un tableau non vide, ce tableau est utilisé tel quel.
+- Si `options` est un objet `{ "url": "...", "field": "..." }`, le plugin lit la réponse JSON et extrait les valeurs uniques du champ indiqué.
+- Si `options` est vide ou absent pour un champ `list`, le plugin propose les valeurs uniques déjà présentes sur ce champ dans les entités de la couche chargée.
+- Les doublons et valeurs vides sont filtrés.
 
 ## 4) Configuration des champs automatiques (`auto`)
 
@@ -52,8 +91,8 @@ Chaque entrée de `auto` accepte le format compact :
 | Position | Nom | Type | Description |
 |---:|---|---|---|
 | `0` | `name` | `string` | Nom du champ à renseigner. |
-| `1` | `type` | `string` | Type automatique. Valeurs supportées : `header`, `date`, `area`, `length`. |
-| `2` | `source` | `string` | Source à utiliser. Pour `header`, chemin à lire dans `security.user`. Pour `date`, format d'affichage souhaité. Inutile pour `area` et `length`. |
+| `1` | `type` | `string` | Type automatique. Valeurs supportées : `header`, `date`, `area`, `length`, `value`. |
+| `2` | `source` | `string` | Source à utiliser. Pour `header`, chemin à lire dans `security.user`. Pour `date`, format d'affichage souhaité. Pour `value`, valeur fixe à injecter. Inutile pour `area` et `length`. |
 
 Règles :
 
@@ -61,6 +100,7 @@ Règles :
 - Le panneau affiche toujours la dernière valeur connue du champ.
 - Si `type` vaut `header`, la valeur est lue dans les informations utilisateur déjà exposées par MapStore/geOrchestra, selon le chemin indiqué.
 - Si `type` vaut `date`, la valeur est remplacée par la date courante à la sauvegarde.
+- Si `type` vaut `value`, la valeur configurée est injectée telle quelle à la sauvegarde.
 - Si `type` vaut `area`, la valeur est calculée à partir de la géométrie de la feature. L’unité par défaut est le mètre carré (`m²`).
 - Si `type` vaut `length`, la valeur est calculée à partir de la géométrie de la feature. Pour une ligne, c’est la longueur. Pour un polygone, c’est le périmètre. L’unité par défaut est le mètre (`m`).
 - Les champs `auto` sont injectés dans la transaction WFS-T même s’ils sont aussi présents dans `hidden`.
@@ -88,11 +128,13 @@ Règles :
           "log_user_modi"
         ],
         "auto": [
+          ["type_saisie", "value", "manual"],
           ["log_user_modi", "header", "username"],
           ["log_date_modi", "date", "DD/MM/YYYY"],
           ["surface_carto", "area"],
           ["longueur_carto", "length"]
         ],
+        "allowDelete": true,
         "edit": ["EDITOR", "ADMIN"],
         "delete": ["ADMIN"],
         "restrictedArea": {
@@ -102,7 +144,8 @@ Règles :
         "fields": [
           ["numero_identifiant", "Identifiant", "string", true, true],
           ["nom", "Nom", "string", false, true],
-          ["etat", "Etat", "select", true, false, ["EDITOR", "ADMIN"], ["Nouveau", "Validé", "Refusé"]],
+          ["etat", "Etat", "list", true, false, ["EDITOR", "ADMIN"], ["Nouveau", "Validé", "Refusé"]],
+          ["dpt", "Département", "list", true, false, [], []],
           ["commentaire", "Commentaire", "string", true, false]
         ]
       }
@@ -118,6 +161,7 @@ Règles :
 - `ADMIN` / `ROLE_ADMIN` a tous les droits.
 - Si un champ est `required` et vide, il reste éditable même si `editable` vaut `false`.
 - Les champs `auto` restent en lecture seule et sont valorisés au moment de la sauvegarde.
+- Le bouton supprimer n’est affiché que si `allowDelete` vaut `true`.
 - Les unités par défaut des calculs géométriques sont `m²` pour `area` et `m` pour `length`.
 - La clé de restriction spatiale utilisée par le plugin est `restrictedArea`.
 - Une réponse WFS-T en HTTP `200` mais contenant une erreur XML est traitée comme un échec et affiche une notification d’erreur.

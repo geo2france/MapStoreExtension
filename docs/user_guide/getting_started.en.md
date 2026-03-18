@@ -24,6 +24,7 @@ Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 | `fields` | `array` | no | Detailed field definition (see next table). |
 | `auto` | `array` | no | Fields filled automatically on save. |
 | `edit` / `editingRoles` | `string[]` | no | Roles allowed to edit the layer. |
+| `allowDelete` | `boolean` | no | Shows the delete button only when set to `true`. |
 | `delete` / `deletionRoles` | `string[]` | no | Roles allowed to delete. |
 | `wfsUrl` | `string` | no | Layer-specific WFS URL. |
 | `idField` | `string` | no | Identifier field name (default: `id`). |
@@ -38,11 +39,49 @@ Each `fields` entry accepts compact format:
 |---:|---|---|---|
 | `0` | `name` | `string` | Attribute key. |
 | `1` | `label` | `string` | Display label. |
-| `2` | `type` | `string` | UI type (`string`, `number`, `date`, `select`, etc.). |
+| `2` | `type` | `string` | UI type (`string`, `number`, `date`, `list`, etc.). |
 | `3` | `editable` | `boolean` | Editable or read-only. |
 | `4` | `required` | `boolean` | Required field. |
 | `5` | `roles` | `string[]` | Roles allowed to edit this field. |
-| `6` | `options` | `array` | Values for list/select inputs. |
+| `6` | `options` | `array \| object` | Values for `list` inputs from a static array, a remote JSON URL, or an empty array for automatic layer-based values. |
+
+### Supported cases for `type: "list"`
+
+- **Static list**
+
+```json
+["dpt", "Department", "list", true, false, [], [75, 77, 78, 91, 92, 93, 94, 95]]
+```
+
+- **Automatic values** from existing field values in the current layer
+
+```json
+["dpt", "Department", "list", true, false, [], []]
+```
+
+- **Remote values** from a WFS or OGC API Features JSON URL
+
+```json
+[
+  "dpt",
+  "Department",
+  "list",
+  true,
+  false,
+  [],
+  {
+    "url": "https://example.org/collections/idf:admin_dpt_idf/items?f=application/json&properties=DPT",
+    "field": "DPT"
+  }
+]
+```
+
+Rules:
+
+- If `options` is a non-empty array, that array is used as-is.
+- If `options` is an object `{ "url": "...", "field": "..." }`, the plugin reads the JSON response and extracts unique values from the configured field.
+- If `options` is empty or missing for a `list` field, the plugin proposes unique values already present for that field in the loaded layer features.
+- Duplicate and empty values are filtered out.
 
 ## 4) Automatic field configuration (`auto`)
 
@@ -52,8 +91,8 @@ Each `auto` entry accepts compact format:
 | Position | Name | Type | Description |
 |---:|---|---|---|
 | `0` | `name` | `string` | Field name to populate. |
-| `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`, `area`, `length`. |
-| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, desired display format. Not used for `area` and `length`. |
+| `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`, `area`, `length`, `value`. |
+| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, desired display format. For `value`, fixed value to inject. Not used for `area` and `length`. |
 
 Rules:
 
@@ -61,6 +100,7 @@ Rules:
 - The panel always displays the last known value.
 - If `type` is `header`, the value is read from user information already exposed by MapStore/geOrchestra, using the configured path.
 - If `type` is `date`, the value is replaced with the current date on save.
+- If `type` is `value`, the configured value is injected as-is on save.
 - If `type` is `area`, the value is computed from the feature geometry. Default unit is square meters (`m²`).
 - If `type` is `length`, the value is computed from the feature geometry. For a line, this is the length. For a polygon, this is the perimeter. Default unit is meters (`m`).
 - `auto` fields are injected into the WFS-T transaction even if they are also listed in `hidden`.
@@ -88,11 +128,13 @@ Rules:
           "log_user_modi"
         ],
         "auto": [
+          ["type_saisie", "value", "manual"],
           ["log_user_modi", "header", "username"],
           ["log_date_modi", "date", "DD/MM/YYYY"],
           ["surface_carto", "area"],
           ["longueur_carto", "length"]
         ],
+        "allowDelete": true,
         "edit": ["EDITOR", "ADMIN"],
         "delete": ["ADMIN"],
         "restrictedArea": {
@@ -102,7 +144,8 @@ Rules:
         "fields": [
           ["identifier", "Identifier", "string", true, true],
           ["name", "Name", "string", false, true],
-          ["status", "Status", "select", true, false, ["EDITOR", "ADMIN"], ["New", "Validated", "Rejected"]],
+          ["status", "Status", "list", true, false, ["EDITOR", "ADMIN"], ["New", "Validated", "Rejected"]],
+          ["dpt", "Department", "list", true, false, [], []],
           ["comment", "Comment", "string", true, false]
         ]
       }
@@ -118,6 +161,7 @@ Rules:
 - `ADMIN` / `ROLE_ADMIN` has full permissions.
 - If a field is `required` and empty, it stays editable even if `editable` is `false`.
 - `auto` fields stay read-only and are populated at save time.
+- The delete button is shown only when `allowDelete` is `true`.
 - Default units for geometry-based calculations are `m²` for `area` and `m` for `length`.
 - Spatial restriction key supported by the plugin is `restrictedArea`.
 - A WFS-T HTTP `200` response that contains an XML error is treated as a failure and shows an error notification.
