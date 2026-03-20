@@ -1,0 +1,11 @@
+{
+    "plugins": [
+        {
+            "name": "panel_editor",
+            "version": "1.0.0",
+            "dependencies": [
+                "SidebarMenu"
+            ]
+        }
+    ]
+}
