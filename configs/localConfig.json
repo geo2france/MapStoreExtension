@@ -417,11 +417,12 @@
           "geoserver": "http://localhost/geoserver",
           "layers": {
             "test:avisee_projets": {
+              "allowDelete": false,
               "featureFieldLabel": "nom",
-              "restrictedAreaDeactivate": {
-                "url": "/console/account/areaofcompetence",
+              "restrictedArea": {
+                "urlKo": "/console/account/areaofcompetence",
                 "operation": "INTERSECTS",
-                "wtk": "GEOMETRYCOLLECTION(POLYGON ((254824.49069202237 6252882.533909702, 254824.49069202237 6251476.2390494505, 256777.57646966795 6251476.2390494505, 256777.57646966795 6252882.533909702, 254824.49069202237 6252882.533909702)))"
+                "wtk": "POLYGON ((2.210655 48.823367, 2.26696 48.823367, 2.26696 48.852065, 2.210655 48.852065, 2.210655 48.823367))"
               },
               "hidden": [
                 "id2",
@@ -433,14 +434,19 @@
               ],
               "auto": [
                 [
+                  "nom_creation",
+                  "value",
+                  "test"
+                ],
+                [
                   "log_user_modi",
                   "header",
-                  "sec.username"
+                  "sec-username"
                 ],
                 [
                   "log_user_crea",
                   "header",
-                  "sec.username"
+                  "sec-username"
                 ],
                 [
                   "log_date_crea",
@@ -451,6 +457,14 @@
                   "log_date_modi",
                   "date",
                   "DD/MM/YYYY"
+                ],
+                [
+                  "surface_carto",
+                  "area"
+                ],
+                [
+                  "longueur_carto",
+                  "length"
                 ]
               ],
               "delete": [
@@ -469,7 +483,20 @@
                   "Nom",
                   "string",
                   false,
-                  true
+                  true,
+                  ["AVISEE"]
+                ],
+                [
+                  "dpt",
+                  "Département",
+                  "list",
+                  true,
+                  false,
+                  [],
+                  {
+                    "url": "https://gis.jdev.fr/geoserver/ogc/features/v1/collections/idf:admin_dpt_idf/items?f=application/json&properties=DPT",
+                    "field": "DEPART"
+                  }
                 ]
               ]
             }

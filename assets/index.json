@@ -1,7 +1,7 @@
 {
   "plugins": [
     {
-      "name": "panel-editor",
+      "name": "panel_editor",
       "version": "@@VERSION@@",
       "dependencies": [
         "SidebarMenu"

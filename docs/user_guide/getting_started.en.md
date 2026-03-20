@@ -199,7 +199,7 @@ Rules:
 - Feature selector labels follow:
   `[number] - (field_name) field_value`.
 - `ADMIN` / `ROLE_ADMIN` has full permissions.
-- If a field is `required` and empty, it stays editable even if `editable` is `false`.
+- If a field is `required` and empty, it stays editable even if `editable` is `false` or editing is restricted to specific roles.
 - `auto` fields stay read-only and are populated at save time.
 - `hidden` fields are always hidden in read mode.
 - In edit mode, a `hidden` field is shown only if it is declared in `fields`.

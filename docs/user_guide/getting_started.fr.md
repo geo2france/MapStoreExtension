@@ -199,7 +199,7 @@ Règles :
 - La liste des entités affiche un label au format:
   `[numero] - (nom_champ) valeur_champ`.
 - `ADMIN` / `ROLE_ADMIN` a tous les droits.
-- Si un champ est `required` et vide, il reste éditable même si `editable` vaut `false`.
+- Si un champ est `required` et vide, il reste éditable même si `editable` vaut `false` ou si son édition est limitée à certains rôles.
 - Les champs `auto` restent en lecture seule et sont valorisés au moment de la sauvegarde.
 - Les champs `hidden` sont toujours masqués en lecture.
 - En mode édition, un champ `hidden` n’est affiché que s’il est déclaré dans `fields`.
