@@ -30,7 +30,7 @@ const PanelEditor = ({
     dockStyle,
     cfg,
     locale,
-    userRole,
+    userRoles,
     canStartEdit,
     responseOptions,
     selectedResponseIndex,
@@ -56,7 +56,7 @@ const PanelEditor = ({
         ? getEditableVisibleFieldNames(selectedAttributes, layerConfig)
         : getVisibleFieldNames(selectedAttributes, layerConfig);
     const showDeleteButton = isDeleteEnabled(layerConfig);
-    const canDeleteCurrentFeature = canDeleteFeature(userRole, layerConfig);
+    const canDeleteCurrentFeature = canDeleteFeature(userRoles, layerConfig);
 
     const title = cfg?.title || t(locale, "panelTitle");
     const baseSize = Number.isFinite(cfg?.size) ? cfg.size : 420;
@@ -202,7 +202,7 @@ const PanelEditor = ({
                                             describeFeatureType
                                         );
                                         const fieldEditable = canEditField(
-                                            userRole,
+                                            userRoles,
                                             fieldDefinition,
                                             selectedAttributes[fieldName]
                                         );
@@ -252,7 +252,7 @@ PanelEditor.propTypes = {
     dockStyle: PropTypes.object,
     cfg: PropTypes.object,
     locale: PropTypes.string,
-    userRole: PropTypes.string,
+    userRoles: PropTypes.array,
     canStartEdit: PropTypes.bool,
     responseOptions: PropTypes.array,
     selectedResponseIndex: PropTypes.number,
@@ -283,7 +283,7 @@ PanelEditor.defaultProps = {
     dockStyle: {},
     cfg: {},
     locale: "en-US",
-    userRole: "",
+    userRoles: [],
     canStartEdit: false,
     responseOptions: [],
     selectedResponseIndex: 0,

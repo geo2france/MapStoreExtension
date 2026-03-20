@@ -29,6 +29,7 @@ import {
     currentLocaleSelector,
     currentUserSelector,
     formValuesSelector,
+    isActive,
     mapInfoClickLayerSelector,
     mapInfoClickPointSelector,
     mapInfoFilterNameListSelector,
@@ -40,7 +41,7 @@ import {
     selectedFeatureSelector,
     selectedLayerConfigSelector,
     selectedResponseLayerNameSelector,
-    userRoleSelector
+    userRolesSelector
 } from "../selectors";
 
 const isRequiredValueMissing = (value) =>
@@ -56,7 +57,7 @@ const getLayerToRefresh = (state = {}, selectedLayerName = "") =>
 
 const getEditableFieldChanges = ({
     locale,
-    userRole,
+    userRoles,
     selectedAttributes = {},
     formValues = {},
     layerConfig = {},
@@ -71,7 +72,7 @@ const getEditableFieldChanges = ({
             describeFeatureType
         );
 
-        if (!canEditField(userRole, fieldDefinition, selectedAttributes[fieldName])) {
+        if (!canEditField(userRoles, fieldDefinition, selectedAttributes[fieldName])) {
             return acc;
         }
 
@@ -100,7 +101,7 @@ const getTransactionParams = (state = {}) => {
     const selectedFeatureId = selectedFeatureIdSelector(state);
     const selectedFeature = selectedFeatureSelector(state);
     const currentUser = currentUserSelector(state);
-    const userRole = userRoleSelector(state);
+    const userRoles = userRolesSelector(state);
     const formValues = formValuesSelector(state);
     const locale = currentLocaleSelector(state);
     const layerConfig = selectedLayerConfigSelector(state);
@@ -125,7 +126,7 @@ const getTransactionParams = (state = {}) => {
         wfsUrl,
         formValues,
         currentUser,
-        userRole,
+        userRoles,
         describeFeatureType,
         selectedFeature,
         selectedAttributes,
@@ -143,6 +144,7 @@ const getTransactionParams = (state = {}) => {
 export const handlePanelEditorTransactionEpic = (action$, store) =>
     action$
         .ofType(PANEL_EDITOR_REQUEST_SAVE, PANEL_EDITOR_REQUEST_DELETE)
+        .filter(() => isActive(store.getState()))
         .switchMap((action) => {
             const state = store.getState();
             const {
@@ -153,7 +155,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
                 wfsUrl,
                 formValues,
                 currentUser,
-                userRole,
+                userRoles,
                 describeFeatureType,
                 selectedFeature,
                 selectedAttributes,
@@ -181,7 +183,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
             } = action.type === PANEL_EDITOR_REQUEST_SAVE
                 ? getEditableFieldChanges({
                     locale,
-                    userRole,
+                    userRoles,
                     selectedAttributes,
                     formValues,
                     layerConfig,
@@ -265,6 +267,7 @@ export const handlePanelEditorTransactionEpic = (action$, store) =>
 export const cancelEditPanelEditorEpic = (action$, store) =>
     action$
         .ofType(PANEL_EDITOR_REQUEST_CANCEL_EDIT)
+        .filter(() => isActive(store.getState()))
         .switchMap(() => {
             const state = store.getState();
             const selectedAttributes = selectedFeaturePropertiesSelector(state);

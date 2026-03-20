@@ -34,7 +34,7 @@ import {
     selectedFeaturePropertiesSelector,
     selectedFeatureSelector,
     selectedResponseIndexSelector,
-    userRoleSelector,
+    userRolesSelector,
     validationErrorsSelector
 } from "../stateManagement/selectors";
 import { PANEL_EDITOR_CONTROL, PANEL_EDITOR_REDUCER_NAME } from "./constants";
@@ -49,7 +49,7 @@ const mapStateToProps = (state, ownProps) => ({
     enabled: isActive(state),
     dockStyle: mapLayoutValuesSelector(state, { height: true, right: true }, true),
     locale: state?.locale?.current || "en-US",
-    userRole: userRoleSelector(state),
+    userRoles: userRolesSelector(state),
     canStartEdit: canStartEditSelector(state),
     responseOptions: responseOptionsSelector(state),
     selectedResponseIndex: selectedResponseIndexSelector(state),

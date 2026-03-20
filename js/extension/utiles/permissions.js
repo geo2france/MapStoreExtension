@@ -1,45 +1,55 @@
-const normalizeRoles = (roles) => (Array.isArray(roles) ? roles.filter(Boolean) : []);
+const normalizeRoles = (roles) => {
+    if (!roles) {
+        return [];
+    }
+    return (Array.isArray(roles) ? roles : [roles]).filter(Boolean);
+};
 const normalizeRole = (role = "") => String(role).replace(/^ROLE_/, "");
 
-export const isAdminRole = (userRole) => userRole === "ADMIN" || userRole === "ROLE_ADMIN";
+export const isAdminRole = (userRoles) =>
+    normalizeRoles(userRoles).some((userRole) => userRole === "ADMIN" || userRole === "ROLE_ADMIN");
 
-export const isRoleAllowed = (userRole, allowedRoles = []) => {
-    if (isAdminRole(userRole)) {
+export const isRoleAllowed = (userRoles, allowedRoles = []) => {
+    if (isAdminRole(userRoles)) {
         return true;
     }
     const safeRoles = normalizeRoles(allowedRoles);
     if (!safeRoles.length) {
         return false;
     }
-    const normalizedUserRole = normalizeRole(userRole);
-    return safeRoles.includes("ALL")
-        || safeRoles.includes(userRole)
-        || safeRoles.includes(`ROLE_${normalizedUserRole}`)
-        || safeRoles.map(normalizeRole).includes(normalizedUserRole);
+    const normalizedAllowedRoles = safeRoles.map(normalizeRole);
+
+    return normalizeRoles(userRoles).some((userRole) => {
+        const normalizedUserRole = normalizeRole(userRole);
+        return safeRoles.includes("ALL")
+            || safeRoles.includes(userRole)
+            || safeRoles.includes(`ROLE_${normalizedUserRole}`)
+            || normalizedAllowedRoles.includes(normalizedUserRole);
+    });
 };
 
-export const canEditLayer = (userRole, layerConfig = {}) => {
-    if (isAdminRole(userRole)) {
+export const canEditLayer = (userRoles, layerConfig = {}) => {
+    if (isAdminRole(userRoles)) {
         return true;
     }
     const editingRoles = layerConfig?.editingRoles || layerConfig?.edit || [];
     if (!editingRoles.length) {
         return true;
     }
-    return isRoleAllowed(userRole, editingRoles);
+    return isRoleAllowed(userRoles, editingRoles);
 };
 
 export const isDeleteEnabled = (layerConfig = {}) => layerConfig?.allowDelete === true;
 
-export const canDeleteFeature = (userRole, layerConfig = {}) => {
-    if (isAdminRole(userRole)) {
+export const canDeleteFeature = (userRoles, layerConfig = {}) => {
+    if (isAdminRole(userRoles)) {
         return true;
     }
     const deletionRoles = layerConfig?.deletionRoles || layerConfig?.delete || layerConfig?.editingRoles || [];
     if (!deletionRoles.length) {
-        return canEditLayer(userRole, layerConfig);
+        return canEditLayer(userRoles, layerConfig);
     }
-    return isRoleAllowed(userRole, deletionRoles);
+    return isRoleAllowed(userRoles, deletionRoles);
 };
 
 const isRequiredValueMissing = (value) =>
@@ -47,11 +57,11 @@ const isRequiredValueMissing = (value) =>
     || value === undefined
     || (typeof value === "string" && value.trim() === "");
 
-export const canEditField = (userRole, fieldConfig = {}, currentValue) => {
+export const canEditField = (userRoles, fieldConfig = {}, currentValue) => {
     if (fieldConfig?.auto || fieldConfig?.type === "auto") {
         return false;
     }
-    if (isAdminRole(userRole)) {
+    if (isAdminRole(userRoles)) {
         return true;
     }
     // Required fields with an empty value must stay editable to allow data completion.
@@ -65,5 +75,5 @@ export const canEditField = (userRole, fieldConfig = {}, currentValue) => {
     if (!fieldRoles.length) {
         return true;
     }
-    return isRoleAllowed(userRole, fieldRoles);
+    return isRoleAllowed(userRoles, fieldRoles);
 };

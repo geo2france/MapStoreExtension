@@ -1,4 +1,5 @@
 import { createSelector } from "reselect";
+import { userGroupSecuritySelector } from "@mapstore/selectors/security";
 import { PANEL_EDITOR_CONTROL } from "../plugin/constants";
 import {
     getConfiguredListFields,
@@ -14,9 +15,31 @@ export const panelEditorStateSelector = (state) => state?.panelEditor || {};
 export const panelEditorControlSelector = (state) => state?.controls?.[PANEL_EDITOR_CONTROL] || {};
 export const mapInfoResponsesSelector = (state) => state?.mapInfo?.responses || [];
 export const currentUserSelector = (state) => state?.security?.user || {};
-export const userRoleSelector = (state) => state?.security?.user?.role;
 export const currentLocaleSelector = (state) => state?.locale?.current || "en-US";
 export const currentMapInfoFormatSelector = (state) => state?.mapInfo?.configuration?.infoFormat || "text/plain";
+
+const toArray = (value) => {
+    if (!value) {
+        return [];
+    }
+    return Array.isArray(value) ? value : [value];
+};
+
+export const userRolesSelector = createSelector(
+    currentUserSelector,
+    userGroupSecuritySelector,
+    (user = {}, userGroups = []) => {
+        const groupNames = toArray(userGroups)
+            .filter((group) => group?.enabled !== false)
+            .map((group) => group?.groupName)
+            .filter(Boolean);
+
+        return [...new Set([
+            ...groupNames,
+            user?.role
+        ].filter(Boolean))];
+    }
+);
 
 export const panelEditorEnabledSelector = createSelector(
     panelEditorControlSelector,

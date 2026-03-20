@@ -110,7 +110,7 @@ export default function panelEditor(state = initialState, action = {}) {
         };
     case PANEL_EDITOR_SETUP:
         return {
-            ...state,
+            ...initialState,
             pluginCfg: action.pluginCfg || {}
         };
     case PANEL_EDITOR_REQUEST_DESCRIBE_FEATURE_TYPE:

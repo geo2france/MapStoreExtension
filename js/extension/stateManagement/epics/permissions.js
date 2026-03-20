@@ -17,17 +17,18 @@ import {
 } from "../actions";
 import {
     currentLocaleSelector,
+    isActive,
     selectedFeaturePropertiesSelector,
     selectedFeatureSelector,
     selectedResponseFeaturesCrsSelector,
     selectedLayerConfigSelector,
-    userRoleSelector
+    userRolesSelector
 } from "../selectors";
 
 const getStartEditParams = (state = {}) => {
     const selectedFeature = selectedFeatureSelector(state);
     const selectedAttributes = selectedFeaturePropertiesSelector(state);
-    const userRole = userRoleSelector(state);
+    const userRoles = userRolesSelector(state);
     const locale = currentLocaleSelector(state);
     const layerConfig = selectedLayerConfigSelector(state);
     const restrictedArea = layerConfig?.restrictedArea;
@@ -35,7 +36,7 @@ const getStartEditParams = (state = {}) => {
 
     return {
         locale,
-        userRole,
+        userRoles,
         selectedFeature,
         selectedAttributes,
         layerConfig,
@@ -45,17 +46,17 @@ const getStartEditParams = (state = {}) => {
 };
 
 const isEditAllowedByRestrictedArea = ({
-    userRole,
+    userRoles,
     layerConfig,
     restrictedArea,
     selectedFeature,
     featureProjection
 }) => {
-    if (!selectedFeature || !canEditLayer(userRole, layerConfig)) {
+    if (!selectedFeature || !canEditLayer(userRoles, layerConfig)) {
         return Promise.resolve(false);
     }
 
-    const bypassRestrictedArea = isRoleAllowed(userRole, restrictedArea?.allowedRoles || []);
+    const bypassRestrictedArea = isRoleAllowed(userRoles, restrictedArea?.allowedRoles || []);
     if (!restrictedArea || bypassRestrictedArea) {
         return Promise.resolve(true);
     }
@@ -85,11 +86,12 @@ const isEditAllowedByRestrictedArea = ({
 export const startEditWithPermissionsEpic = (action$, store) =>
     action$
         .ofType(PANEL_EDITOR_REQUEST_START_EDIT)
+        .filter(() => isActive(store.getState()))
         .switchMap(() => {
             const state = store.getState();
             const {
                 locale,
-                userRole,
+                userRoles,
                 selectedFeature,
                 selectedAttributes,
                 layerConfig,
@@ -98,7 +100,7 @@ export const startEditWithPermissionsEpic = (action$, store) =>
             } = getStartEditParams(state);
 
             return Rx.Observable.fromPromise(isEditAllowedByRestrictedArea({
-                userRole,
+                userRoles,
                 layerConfig,
                 restrictedArea,
                 selectedFeature,
@@ -126,10 +128,11 @@ export const startEditWithPermissionsEpic = (action$, store) =>
 export const evaluateEditPermissionEpic = (action$, store) =>
     action$
         .ofType(LOAD_FEATURE_INFO, PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX, PANEL_EDITOR_SET_SELECTED_FEATURE_INDEX)
+        .filter(() => isActive(store.getState()))
         .switchMap(() => {
             const state = store.getState();
             const {
-                userRole,
+                userRoles,
                 selectedFeature,
                 layerConfig,
                 restrictedArea,
@@ -141,7 +144,7 @@ export const evaluateEditPermissionEpic = (action$, store) =>
             }
 
             return Rx.Observable.fromPromise(isEditAllowedByRestrictedArea({
-                userRole,
+                userRoles,
                 layerConfig,
                 restrictedArea,
                 selectedFeature,
