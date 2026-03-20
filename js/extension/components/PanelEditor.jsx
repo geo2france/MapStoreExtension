@@ -9,6 +9,7 @@ import {
     formatFieldDisplayValue,
     getFeatureOptionLabel,
     getVisibleFieldNames,
+    normalizeSelectOptions,
     resolveFieldDefinition
 } from "../utiles/attributes";
 import renderInputByType from "./formControls/renderInputByType";
@@ -206,6 +207,9 @@ const PanelEditor = ({
                                             selectedAttributes[fieldName]
                                         );
                                         const fieldError = validationErrors[fieldName];
+                                        const fieldOptions = Array.isArray(resolvedListFieldOptions[fieldName])
+                                            ? resolvedListFieldOptions[fieldName]
+                                            : normalizeSelectOptions(fieldDefinition.options);
                                         return (
                                             <FormGroup key={fieldName} validationState={fieldError ? "error" : null}>
                                                 <ControlLabel>
@@ -216,13 +220,13 @@ const PanelEditor = ({
                                                     ? renderInputByType({
                                                         type: fieldDefinition.type,
                                                         value: formValues[fieldName],
-                                                        options: resolvedListFieldOptions[fieldName] || fieldDefinition.options,
+                                                        options: fieldOptions,
                                                         onChange: (value) => onUpdateField(fieldName, value)
                                                     })
                                                     : renderInputByType({
                                                         type: fieldDefinition.type,
                                                         value: formValues[fieldName] ?? selectedAttributes[fieldName] ?? "",
-                                                        options: resolvedListFieldOptions[fieldName] || fieldDefinition.options,
+                                                        options: fieldOptions,
                                                         onChange: () => {},
                                                         disabled: true
                                                     })}

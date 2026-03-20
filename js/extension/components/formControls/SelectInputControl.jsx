@@ -7,7 +7,12 @@ import { FormControl } from "react-bootstrap";
  * @param {string|number|object} option Raw option value.
  * @returns {{value: *, label: *}} Normalized option object.
  */
-const normalizeOption = (option) => (typeof option === "object" ? option : { value: option, label: option });
+const normalizeOption = (option) => {
+    if (option && typeof option === "object") {
+        return option;
+    }
+    return { value: option, label: option };
+};
 
 /**
  * Select input used for list-based attribute editing.
@@ -22,7 +27,7 @@ const SelectInputControl = ({ value, options, includeEmptyOption, onChange, disa
         onChange={(event) => onChange(event.target.value)}
     >
         {includeEmptyOption ? <option value="" /> : null}
-        {options.map((option) => {
+        {(Array.isArray(options) ? options : []).map((option) => {
             const normalizedOption = normalizeOption(option);
             return (
                 <option key={normalizedOption.value} value={normalizedOption.value}>
