@@ -30,7 +30,8 @@ const initialState = {
     validationErrors: {},
     editPermission: {
         allowed: false,
-        pending: false
+        pending: false,
+        reasons: []
     },
     mapInfoWasEnabled: false,
     mapInfoPreviousFormat: "text/plain",
@@ -95,7 +96,8 @@ export default function panelEditor(state = initialState, action = {}) {
             ...state,
             editPermission: {
                 allowed: !!action.allowed,
-                pending: !!action.pending
+                pending: !!action.pending,
+                reasons: Array.isArray(action.reasons) ? action.reasons : []
             }
         };
     case PANEL_EDITOR_SET_MAPINFO_WAS_ENABLED:

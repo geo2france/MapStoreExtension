@@ -47,12 +47,11 @@ const getStartEditParams = (state = {}) => {
 
 const isEditAllowedByRestrictedArea = ({
     userRoles,
-    layerConfig,
     restrictedArea,
     selectedFeature,
     featureProjection
 }) => {
-    if (!selectedFeature || !canEditLayer(userRoles, layerConfig)) {
+    if (!selectedFeature) {
         return Promise.resolve(false);
     }
 
@@ -83,6 +82,39 @@ const isEditAllowedByRestrictedArea = ({
         .catch(() => true);
 };
 
+const resolveEditPermission = ({
+    userRoles,
+    layerConfig,
+    restrictedArea,
+    selectedFeature,
+    featureProjection
+}) => {
+    if (!selectedFeature) {
+        return Promise.resolve({ allowed: false, reasons: [] });
+    }
+
+    const hasRolePermission = canEditLayer(userRoles, layerConfig);
+
+    return isEditAllowedByRestrictedArea({
+        userRoles,
+        restrictedArea,
+        selectedFeature,
+        featureProjection
+    }).then((allowedByArea) => {
+        const reasons = [];
+        if (!hasRolePermission) {
+            reasons.push("role");
+        }
+        if (!allowedByArea) {
+            reasons.push("restrictedArea");
+        }
+        return {
+            allowed: reasons.length === 0,
+            reasons
+        };
+    });
+};
+
 export const startEditWithPermissionsEpic = (action$, store) =>
     action$
         .ofType(PANEL_EDITOR_REQUEST_START_EDIT)
@@ -99,15 +131,15 @@ export const startEditWithPermissionsEpic = (action$, store) =>
                 featureProjection
             } = getStartEditParams(state);
 
-            return Rx.Observable.fromPromise(isEditAllowedByRestrictedArea({
+            return Rx.Observable.fromPromise(resolveEditPermission({
                 userRoles,
                 layerConfig,
                 restrictedArea,
                 selectedFeature,
                 featureProjection
             }))
-                .switchMap((allowedByArea) => {
-                    if (allowedByArea) {
+                .switchMap(({ allowed, reasons }) => {
+                    if (allowed) {
                         return Rx.Observable.of(
                             setFormValues(selectedAttributes || {}),
                             setEditMode(true),
@@ -119,7 +151,7 @@ export const startEditWithPermissionsEpic = (action$, store) =>
                     return Rx.Observable.of(
                         setEditMode(false),
                         setSaveStatus("idle"),
-                        setSaveMessage(t(locale, "editRestrictedAreaDenied")),
+                        setSaveMessage(reasons.includes("restrictedArea") ? t(locale, "editRestrictedAreaDenied") : ""),
                         setValidationErrors({})
                     );
                 });
@@ -140,16 +172,16 @@ export const evaluateEditPermissionEpic = (action$, store) =>
             } = getStartEditParams(state);
 
             if (!selectedFeature) {
-                return Rx.Observable.of(setEditPermission(false, false));
+                return Rx.Observable.of(setEditPermission(false, false, []));
             }
 
-            return Rx.Observable.fromPromise(isEditAllowedByRestrictedArea({
+            return Rx.Observable.fromPromise(resolveEditPermission({
                 userRoles,
                 layerConfig,
                 restrictedArea,
                 selectedFeature,
                 featureProjection
             }))
-                .map((allowed) => setEditPermission(allowed, false))
-                .startWith(setEditPermission(false, true));
+                .map(({ allowed, reasons }) => setEditPermission(allowed, false, reasons))
+                .startWith(setEditPermission(false, true, []));
         });

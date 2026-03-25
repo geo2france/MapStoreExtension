@@ -21,6 +21,7 @@ import {
 import {
     canStartEditSelector,
     editModeSelector,
+    editPermissionReasonsSelector,
     formValuesSelector,
     isActive,
     responseOptionsSelector,
@@ -51,6 +52,7 @@ const mapStateToProps = (state, ownProps) => ({
     locale: state?.locale?.current || "en-US",
     userRoles: userRolesSelector(state),
     canStartEdit: canStartEditSelector(state),
+    editPermissionReasons: editPermissionReasonsSelector(state),
     responseOptions: responseOptionsSelector(state),
     selectedResponseIndex: selectedResponseIndexSelector(state),
     selectedFeatureIndex: selectedFeatureIndexSelector(state),

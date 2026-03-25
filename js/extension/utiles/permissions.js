@@ -29,6 +29,13 @@ export const isRoleAllowed = (userRoles, allowedRoles = []) => {
 };
 
 export const canEditLayer = (userRoles, layerConfig = {}) => {
+    if (layerConfig?.allowEdit === false) {
+        return false;
+    }
+    const allowEditRoles = normalizeRoles(layerConfig?.allowEditRoles);
+    if (allowEditRoles.length) {
+        return isRoleAllowed(userRoles, allowEditRoles);
+    }
     if (isAdminRole(userRoles)) {
         return true;
     }

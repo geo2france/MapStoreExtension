@@ -77,10 +77,11 @@ export const setMapInfoPreviousFormat = (infoFormat = "text/plain") => ({
     infoFormat
 });
 
-export const setEditPermission = (allowed = false, pending = false) => ({
+export const setEditPermission = (allowed = false, pending = false, reasons = []) => ({
     type: PANEL_EDITOR_SET_EDIT_PERMISSION,
     allowed: !!allowed,
-    pending: !!pending
+    pending: !!pending,
+    reasons
 });
 
 export const setup = (pluginCfg = {}) => ({

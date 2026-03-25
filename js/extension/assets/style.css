@@ -46,7 +46,7 @@
 }
 
 .panel-editor-mode-title {
-    margin: 5px 0;
+    margin: 0;
 }
 
 .panel-editor-mode-title .label {
@@ -64,12 +64,18 @@
     margin-bottom: 10px;
     flex-shrink: 0;
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    gap: 8px;
 }
 
 .panel-editor-actions {
     display: flex;
     gap: 8px;
+}
+
+.panel-editor-toolbar .panel-editor-mode-title {
+    margin-right: auto;
 }
 
 .panel-editor-attributes-table th {

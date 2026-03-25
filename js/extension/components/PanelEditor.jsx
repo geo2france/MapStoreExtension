@@ -32,6 +32,7 @@ const PanelEditor = ({
     locale,
     userRoles,
     canStartEdit,
+    editPermissionReasons,
     responseOptions,
     selectedResponseIndex,
     selectedFeatureIndex,
@@ -57,11 +58,12 @@ const PanelEditor = ({
         : getVisibleFieldNames(selectedAttributes, layerConfig);
     const showDeleteButton = isDeleteEnabled(layerConfig);
     const canDeleteCurrentFeature = canDeleteFeature(userRoles, layerConfig);
+    const hasRoleRestriction = editPermissionReasons.includes("role");
+    const hasRestrictedAreaRestriction = editPermissionReasons.includes("restrictedArea");
 
     const title = cfg?.title || t(locale, "panelTitle");
     const baseSize = Number.isFinite(cfg?.size) ? cfg.size : 420;
     const size = baseSize + PANEL_SIZE_EXTRA;
-    const selectedResponseOption = responseOptions[selectedResponseIndex] || responseOptions[0];
 
     return (
         <ResponsivePanel
@@ -88,22 +90,14 @@ const PanelEditor = ({
                 ) : (
                     <div className="panel-editor-content">
                         <div className="panel-editor-static-header">
-                            {responseOptions.length > 1 ? (
+                            {responseOptions.length ? (
                                 <FormGroup>
                                     <SelectInputControl
                                         value={selectedResponseIndex}
                                         options={responseOptions}
+                                        disabled={editMode || responseOptions.length === 1}
                                         onChange={(value) => onSelectResponse(Number(value))}
                                     />
-                                </FormGroup>
-                            ) : null}
-
-                            {responseOptions.length === 1 && selectedResponseOption?.label ? (
-                                <FormGroup>
-                                    <div className="panel-editor-static-value">
-                                        <Glyphicon glyph="triangle-right" className="panel-editor-static-value-icon" />
-                                        <span>{selectedResponseOption.label}</span>
-                                    </div>
                                 </FormGroup>
                             ) : null}
 
@@ -117,17 +111,19 @@ const PanelEditor = ({
                                             label: getFeatureOptionLabel(feature, layerConfig, index),
                                             key: feature?.id || index
                                         }))}
+                                        disabled={editMode}
                                         onChange={(value) => onSelectFeature(Number(value))}
                                     />
                                 </FormGroup>
                             ) : null}
 
-                            {editMode ? (
-                                <div className="panel-editor-mode-title">
-                                    <span className="label label-primary">{t(locale, "editModeTitle")}</span>
-                                </div>
-                            ) : null}
                             <div className="panel-editor-toolbar">
+                                {editMode ? (
+                                    <div className="panel-editor-mode-title">
+                                        <span className="label label-primary">{t(locale, "editModeTitle")}</span>
+                                    </div>
+                                ) : <div />}
+
                                 {!editMode && canStartEdit ? (
                                     <Button
                                         bsStyle="primary"
@@ -139,6 +135,27 @@ const PanelEditor = ({
                                         <Glyphicon glyph="pencil" />
                                     </Button>
                                 ) : null}
+
+                                {!editMode && !canStartEdit && selectedFeature && hasRoleRestriction ? (
+                                    <Button
+                                        disabled
+                                        title={t(locale, "noEditRights")}
+                                        aria-label={t(locale, "noEditRights")}
+                                    >
+                                        <Glyphicon glyph="lock" />
+                                    </Button>
+                                ) : null}
+
+                                {!editMode && !canStartEdit && selectedFeature && hasRestrictedAreaRestriction ? (
+                                    <Button
+                                        disabled
+                                        title={t(locale, "outsideCompetenceArea")}
+                                        aria-label={t(locale, "outsideCompetenceArea")}
+                                    >
+                                        <Glyphicon glyph="record" />
+                                    </Button>
+                                ) : null}
+
                                 {editMode ? (
                                     <div className="panel-editor-actions">
                                         <Button
@@ -263,6 +280,7 @@ PanelEditor.propTypes = {
     locale: PropTypes.string,
     userRoles: PropTypes.array,
     canStartEdit: PropTypes.bool,
+    editPermissionReasons: PropTypes.array,
     responseOptions: PropTypes.array,
     selectedResponseIndex: PropTypes.number,
     selectedFeatureIndex: PropTypes.number,
@@ -294,6 +312,7 @@ PanelEditor.defaultProps = {
     locale: "en-US",
     userRoles: [],
     canStartEdit: false,
+    editPermissionReasons: [],
     responseOptions: [],
     selectedResponseIndex: 0,
     selectedFeatureIndex: 0,

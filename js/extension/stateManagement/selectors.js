@@ -110,12 +110,17 @@ export const validationErrorsSelector = createSelector(
 
 export const editPermissionSelector = createSelector(
     panelEditorStateSelector,
-    (panelEditor) => panelEditor?.editPermission || { allowed: false, pending: false }
+    (panelEditor) => panelEditor?.editPermission || { allowed: false, pending: false, reasons: [] }
 );
 
 export const canStartEditSelector = createSelector(
     editPermissionSelector,
     (editPermission) => !!editPermission?.allowed
+);
+
+export const editPermissionReasonsSelector = createSelector(
+    editPermissionSelector,
+    (editPermission) => Array.isArray(editPermission?.reasons) ? editPermission.reasons : []
 );
 
 export const mapInfoWasEnabledSelector = createSelector(
