@@ -288,8 +288,13 @@
           "title": "Projets avisés",
           "geoserver": "http://localhost/geoserver",
           "layers": {
+            "test:avis_urbanisme": {
+              "allowDelete": false,
+              "featureFieldLabel": "libelle"
+            },
             "test:avisee_projets": {
               "allowDelete": false,
+              "allowEdit": true,
               "featureFieldLabel": "nom",
               "restrictedArea": {
                 "urlKo": "/console/account/areaofcompetence",
