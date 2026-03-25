@@ -1,7 +1,7 @@
 {
   "plugins": [
     {
-      "name": "panel_editor",
+      "name": "panelEditor",
       "dependencies": [
         "Toolbar"
       ]

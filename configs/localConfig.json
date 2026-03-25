@@ -281,7 +281,7 @@
         ],
         "desktop": [
                 {
-        "name": "panel_editor",
+        "name": "panelEditor",
         "cfg": {
           "tooltip": "Projets avisés",
           "icon": "map",

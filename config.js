@@ -1,3 +1,3 @@
 module.exports = {
-    name: "panel_editor"
+    name: "panelEditor"
 };
