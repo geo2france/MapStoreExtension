@@ -8,11 +8,37 @@ La configuration se fait dans `localConfig.json` sous le plugin `panel_editor`.
 |---|---|---:|---|
 | `title` | `string` | non | Titre du panneau. |
 | `tooltip` | `string` | non | Tooltip du bouton du plugin. |
-| `icon` | `string` | non | Icône MapStore (`Glyphicon`). |
+| `icon` | `string` | non | Icône MapStore (`Glyphicon`) par défaut. |
+| `iconByContext` | `object` | non | Surcharge de l’icône selon le contexte courant. Les clés peuvent être l’identifiant ou le nom du contexte, avec une clé optionnelle `default`. |
 | `size` | `number` | non | Largeur de base du panneau (le plugin ajoute +100 px). |
 | `geoserver` | `string` | non | URL GeoServer de base (fallback pour WFS). |
 | `wfsUrl` | `string` | non | URL WFS globale (prioritaire sur `geoserver`). |
 | `layers` | `object` | oui | Dictionnaire des règles par couche (`workspace:layer`). |
+
+### Icône du bouton par contexte
+
+Le bouton `SidebarMenu` peut utiliser une icône différente selon le contexte courant.
+
+Ordre de résolution :
+
+- `cfg.iconByContext[context.resource.id]`
+- `cfg.iconByContext[context.resource.name]`
+- `cfg.iconByContext.default`
+- `cfg.icon`
+- fallback interne : `list-alt`
+
+Exemple :
+
+```json
+"cfg": {
+  "icon": "list-alt",
+  "iconByContext": {
+    "12": "pencil",
+    "Contexte urbanisme": "folder-open",
+    "default": "map"
+  }
+}
+```
 
 ## 2) Configuration par couche (`cfg.layers["workspace:layer"]`)
 
@@ -156,6 +182,11 @@ Règles :
     "title": "Projets avisés",
     "tooltip": "Projets avisés",
     "icon": "map",
+    "iconByContext": {
+      "12": "pencil",
+      "Contexte urbanisme": "folder-open",
+      "default": "map"
+    },
     "size": 420,
     "geoserver": "http://localhost/geoserver",
     "layers": {

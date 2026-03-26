@@ -92,12 +92,34 @@ const PanelEditorPluginComponent = compose(
 
 const panelEditorSelector = (state) => ({
     bsStyle: state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled ? "primary" : "tray",
-    active: !!state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled
+    active: !!state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled,
+    contextResource: state?.context?.resource || {}
 });
+
+const getSidebarIconGlyph = (pluginCfg = {}, contextResource = {}) => {
+    const iconByContext = pluginCfg?.iconByContext;
+
+    if (iconByContext && typeof iconByContext === "object" && !Array.isArray(iconByContext)) {
+        const contextId = contextResource?.id != null ? String(contextResource.id) : null;
+        const contextName = contextResource?.name;
+
+        if (contextId && iconByContext[contextId]) {
+            return iconByContext[contextId];
+        }
+        if (contextName && iconByContext[contextName]) {
+            return iconByContext[contextName];
+        }
+        if (iconByContext.default) {
+            return iconByContext.default;
+        }
+    }
+
+    return pluginCfg?.icon || "list-alt";
+};
 
 const SidebarMenuTool = (props) => (
     <SidebarElement {...props}>
-        <Glyphicon glyph={props?.pluginCfg?.icon || "list-alt"} />
+        <Glyphicon glyph={getSidebarIconGlyph(props?.pluginCfg, props?.contextResource)} />
     </SidebarElement>
 );
 

@@ -8,11 +8,37 @@ Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 |---|---|---:|---|
 | `title` | `string` | no | Panel title. |
 | `tooltip` | `string` | no | Plugin button tooltip. |
-| `icon` | `string` | no | MapStore icon (`Glyphicon`). |
+| `icon` | `string` | no | Default MapStore icon (`Glyphicon`). |
+| `iconByContext` | `object` | no | Icon override based on the current context. Keys can be the context id or context name, with an optional `default` key. |
 | `size` | `number` | no | Base panel width (plugin adds +100 px). |
 | `geoserver` | `string` | no | Base GeoServer URL (WFS fallback). |
 | `wfsUrl` | `string` | no | Global WFS URL (higher priority than `geoserver`). |
 | `layers` | `object` | yes | Per-layer rules (`workspace:layer`). |
+
+### Sidebar button icon by context
+
+The `SidebarMenu` button can use a different icon depending on the current context.
+
+Resolution order:
+
+- `cfg.iconByContext[context.resource.id]`
+- `cfg.iconByContext[context.resource.name]`
+- `cfg.iconByContext.default`
+- `cfg.icon`
+- internal fallback: `list-alt`
+
+Example:
+
+```json
+"cfg": {
+  "icon": "list-alt",
+  "iconByContext": {
+    "12": "pencil",
+    "Urban planning context": "folder-open",
+    "default": "map"
+  }
+}
+```
 
 ## 2) Layer configuration (`cfg.layers["workspace:layer"]`)
 
@@ -156,6 +182,11 @@ Rules:
     "title": "Reviewed projects",
     "tooltip": "Reviewed projects",
     "icon": "map",
+    "iconByContext": {
+      "12": "pencil",
+      "Urban planning context": "folder-open",
+      "default": "map"
+    },
     "size": 420,
     "geoserver": "http://localhost/geoserver",
     "layers": {
