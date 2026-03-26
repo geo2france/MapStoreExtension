@@ -283,9 +283,9 @@
                 {
         "name": "panelEditor",
         "cfg": {
-          "tooltip": "Projets avisés",
-          "icon": "map",
-          "title": "Projets avisés",
+          "tooltip": "Attributs / édition",
+          "icon": "list-alt",
+          "title": "Attributs",
           "geoserver": "http://localhost/geoserver",
           "layers": {
             "test:avis_urbanisme": {

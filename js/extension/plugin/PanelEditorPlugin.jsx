@@ -4,6 +4,7 @@ import { Glyphicon } from "react-bootstrap";
 import { toggleControl } from "@mapstore/actions/controls";
 import { mapLayoutValuesSelector } from "@mapstore/selectors/maplayout";
 import { createPlugin } from "@mapstore/utils/PluginsUtils";
+import SidebarElement from "../../../MapStore2/web/client/components/sidebarmenu/SidebarElement";
 import { name } from "../../../config";
 import PanelEditor from "../components/PanelEditor";
 import reducer from "../stateManagement/reducer";
@@ -94,17 +95,25 @@ const panelEditorSelector = (state) => ({
     active: !!state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled
 });
 
+const SidebarMenuTool = (props) => (
+    <SidebarElement {...props}>
+        <Glyphicon glyph={props?.pluginCfg?.icon || "list-alt"} />
+    </SidebarElement>
+);
+
 export default createPlugin(name, {
     component: PanelEditorPluginComponent,
     containers: {
         SidebarMenu: {
             name,
             position: 8,
-            icon: <Glyphicon glyph="th-list" />,
+            icon: <Glyphicon glyph="list-alt" />,
+            tool: SidebarMenuTool,
             action: toggleControl.bind(null, PANEL_EDITOR_CONTROL, null),
             doNotHide: true,
             priority: 1,
             selector: panelEditorSelector
+
         },
         BurgerMenu: {
             name,
