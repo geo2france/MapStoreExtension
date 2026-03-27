@@ -285,6 +285,7 @@
         "cfg": {
           "tooltip": "Attributs / édition",
           "icon": "list-alt",
+          "iconByContext": {},
           "title": "Attributs",
           "geoserver": "http://localhost/geoserver",
           "layers": {
