@@ -21,6 +21,7 @@ export const PANEL_EDITOR_REQUEST_SAVE = "PANEL_EDITOR:REQUEST_SAVE";
 export const PANEL_EDITOR_REQUEST_DELETE = "PANEL_EDITOR:REQUEST_DELETE";
 export const PANEL_EDITOR_REQUEST_START_EDIT = "PANEL_EDITOR:REQUEST_START_EDIT";
 export const PANEL_EDITOR_REQUEST_CANCEL_EDIT = "PANEL_EDITOR:REQUEST_CANCEL_EDIT";
+export const PANEL_EDITOR_REQUEST_ZOOM_TO_RESTRICTED_AREA = "PANEL_EDITOR:REQUEST_ZOOM_TO_RESTRICTED_AREA";
 
 export const setEditMode = (enabled) => ({
     type: PANEL_EDITOR_SET_EDIT_MODE,
@@ -138,4 +139,8 @@ export const requestStartEdit = () => ({
 
 export const requestCancelEdit = () => ({
     type: PANEL_EDITOR_REQUEST_CANCEL_EDIT
+});
+
+export const requestZoomToRestrictedArea = () => ({
+    type: PANEL_EDITOR_REQUEST_ZOOM_TO_RESTRICTED_AREA
 });

@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import ResponsivePanel from "@mapstore/components/misc/panels/ResponsivePanel";
-import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock } from "react-bootstrap";
+import OverlayTrigger from "../../../MapStore2/web/client/components/misc/OverlayTrigger";
+import { Alert, Button, ControlLabel, FormGroup, Glyphicon, HelpBlock, Tooltip } from "react-bootstrap";
 import { t } from "../utiles/i18n";
 import { canDeleteFeature, canEditField, isDeleteEnabled } from "../utiles/permissions";
 import {
@@ -16,6 +17,30 @@ import renderInputByType from "./formControls/renderInputByType";
 import SelectInputControl from "./formControls/SelectInputControl";
 
 const PANEL_SIZE_EXTRA = 100;
+
+const DisabledToolbarButton = ({ message, children }) => (
+    <OverlayTrigger
+        placement="left"
+        overlay={<Tooltip id={`panel-editor-tooltip-${message}`}>{message}</Tooltip>}
+    >
+        <span style={{ display: "inline-block" }}>
+            <Button disabled aria-label={message}>
+                {children}
+            </Button>
+        </span>
+    </OverlayTrigger>
+);
+
+const ToolbarButton = ({ message, onClick, children }) => (
+    <OverlayTrigger
+        placement="left"
+        overlay={<Tooltip id={`panel-editor-tooltip-${message}`}>{message}</Tooltip>}
+    >
+        <Button onClick={onClick} aria-label={message} title={message}>
+            {children}
+        </Button>
+    </OverlayTrigger>
+);
 
 /**
  * Main attributes panel used by the plugin in read and edit modes.
@@ -49,6 +74,7 @@ const PanelEditor = ({
     onSelectFeature,
     onStartEdit,
     onCancelEdit,
+    onZoomToRestrictedArea,
     onUpdateField,
     onSave,
     onDelete
@@ -62,7 +88,10 @@ const PanelEditor = ({
     const hasRestrictedAreaRestriction = editPermissionReasons.includes("restrictedArea");
 
     const title = cfg?.title || t(locale, "panelTitle");
-    const baseSize = Number.isFinite(cfg?.size) ? cfg.size : 420;
+    const configuredSize = Number.isFinite(cfg?.sizePanel)
+        ? cfg.sizePanel
+        : cfg?.size;
+    const baseSize = Number.isFinite(configuredSize) ? configuredSize : 420;
     const size = baseSize + PANEL_SIZE_EXTRA;
 
     return (
@@ -137,23 +166,23 @@ const PanelEditor = ({
                                 ) : null}
 
                                 {!editMode && !canStartEdit && selectedFeature && hasRoleRestriction ? (
-                                    <Button
-                                        disabled
-                                        title={t(locale, "noEditRights")}
-                                        aria-label={t(locale, "noEditRights")}
-                                    >
+                                    <DisabledToolbarButton message={t(locale, "noEditRights")}>
                                         <Glyphicon glyph="lock" />
-                                    </Button>
+                                    </DisabledToolbarButton>
                                 ) : null}
 
                                 {!editMode && !canStartEdit && selectedFeature && hasRestrictedAreaRestriction ? (
-                                    <Button
-                                        disabled
-                                        title={t(locale, "outsideCompetenceArea")}
-                                        aria-label={t(locale, "outsideCompetenceArea")}
-                                    >
-                                        <Glyphicon glyph="record" />
-                                    </Button>
+                                    <>
+                                        <DisabledToolbarButton message={t(locale, "outsideCompetenceArea")}>
+                                            <Glyphicon glyph="record" />
+                                        </DisabledToolbarButton>
+                                        <ToolbarButton
+                                            message={t(locale, "zoomToCompetenceArea")}
+                                            onClick={onZoomToRestrictedArea}
+                                        >
+                                            <Glyphicon glyph="zoom-in" />
+                                        </ToolbarButton>
+                                    </>
                                 ) : null}
 
                                 {editMode ? (
@@ -297,6 +326,7 @@ PanelEditor.propTypes = {
     onSelectFeature: PropTypes.func,
     onStartEdit: PropTypes.func,
     onCancelEdit: PropTypes.func,
+    onZoomToRestrictedArea: PropTypes.func,
     onUpdateField: PropTypes.func,
     onSave: PropTypes.func,
     onDelete: PropTypes.func
@@ -329,6 +359,7 @@ PanelEditor.defaultProps = {
     onSelectFeature: () => {},
     onStartEdit: () => {},
     onCancelEdit: () => {},
+    onZoomToRestrictedArea: () => {},
     onUpdateField: () => {},
     onSave: () => {},
     onDelete: () => {}

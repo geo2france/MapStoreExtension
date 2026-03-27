@@ -15,6 +15,7 @@ import {
     requestCancelEdit,
     requestStartEdit,
     requestSave,
+    requestZoomToRestrictedArea,
     setSelectedFeatureIndex,
     setSelectedResponseIndex,
     updateFormValue
@@ -72,11 +73,12 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    onClose: () => dispatch(toggleControl(PANEL_EDITOR_CONTROL, null)),
+    onClose: () => dispatch(toggleControl(PANEL_EDITOR_CONTROL, "enabled")),
     onSelectResponse: (index) => dispatch(setSelectedResponseIndex(index)),
     onSelectFeature: (index) => dispatch(setSelectedFeatureIndex(index)),
     onStartEdit: () => dispatch(requestStartEdit()),
     onCancelEdit: () => dispatch(requestCancelEdit()),
+    onZoomToRestrictedArea: () => dispatch(requestZoomToRestrictedArea()),
     onUpdateField: (fieldName, value) => dispatch(updateFormValue(fieldName, value)),
     onSave: () => dispatch(requestSave()),
     onDelete: () => dispatch(requestDelete())
@@ -90,17 +92,19 @@ const PanelEditorPluginComponent = compose(
     )
 )(PanelEditor);
 
-const panelEditorSelector = (state) => ({
+const panelEditorSelector = (state, ownProps) => ({
     bsStyle: state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled ? "primary" : "tray",
     active: !!state?.controls?.[PANEL_EDITOR_CONTROL]?.enabled,
-    contextResource: state?.context?.resource || {}
+    contextResource: state?.context?.resource || {},
+    pluginCfg: ownProps?.pluginCfg || ownProps?.cfg || {}
 });
 
 const getSidebarIconGlyph = (pluginCfg = {}, contextResource = {}) => {
     const iconByContext = pluginCfg?.iconByContext;
 
     if (iconByContext && typeof iconByContext === "object" && !Array.isArray(iconByContext)) {
-        const contextId = contextResource?.id != null ? String(contextResource.id) : null;
+        const hasContextId = contextResource?.id !== null && contextResource?.id !== undefined;
+        const contextId = hasContextId ? String(contextResource.id) : null;
         const contextName = contextResource?.name;
 
         if (contextId && iconByContext[contextId]) {
@@ -123,6 +127,13 @@ const SidebarMenuTool = (props) => (
     </SidebarElement>
 );
 
+const ConnectedSidebarMenuTool = connect(
+    panelEditorSelector,
+    {
+        onClick: toggleControl.bind(null, PANEL_EDITOR_CONTROL, "enabled")
+    }
+)(SidebarMenuTool);
+
 export default createPlugin(name, {
     component: PanelEditorPluginComponent,
     containers: {
@@ -130,18 +141,16 @@ export default createPlugin(name, {
             name,
             position: 8,
             icon: <Glyphicon glyph="list-alt" />,
-            tool: SidebarMenuTool,
-            action: toggleControl.bind(null, PANEL_EDITOR_CONTROL, null),
+            tool: ConnectedSidebarMenuTool,
             doNotHide: true,
             priority: 1,
             selector: panelEditorSelector
-
         },
         BurgerMenu: {
             name,
             position: 8,
             icon: <Glyphicon glyph="th-list" />,
-            action: toggleControl.bind(null, PANEL_EDITOR_CONTROL, null),
+            action: toggleControl.bind(null, PANEL_EDITOR_CONTROL, "enabled"),
             doNotHide: true,
             priority: 3
         }

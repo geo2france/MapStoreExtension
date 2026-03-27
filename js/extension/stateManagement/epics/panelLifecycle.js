@@ -35,7 +35,10 @@ const PANEL_SIZE_EXTRA = 100;
 
 const getPanelSize = (state = {}) => {
     const pluginCfg = pluginCfgSelector(state);
-    const baseSize = Number.isFinite(pluginCfg?.size) ? pluginCfg.size : 420;
+    const configuredSize = Number.isFinite(pluginCfg?.sizePanel)
+        ? pluginCfg.sizePanel
+        : pluginCfg?.size;
+    const baseSize = Number.isFinite(configuredSize) ? configuredSize : 420;
     return baseSize + PANEL_SIZE_EXTRA;
 };
 

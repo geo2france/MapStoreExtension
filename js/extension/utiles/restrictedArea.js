@@ -16,8 +16,26 @@ const GEOJSON_GEOMETRY_TYPES = [
     "GeometryCollection"
 ];
 
-const reprojectGeometryObject = (geometry = null, targetProjection = "EPSG:4326") => {
-    if (!geometry || !targetProjection || targetProjection === "EPSG:4326") {
+const normalizeProjectionCode = (projection) => {
+    if (!projection || typeof projection !== "string") {
+        return "EPSG:4326";
+    }
+    if (projection.startsWith("EPSG:")) {
+        return projection;
+    }
+    const lastToken = projection.split(":").pop();
+    return lastToken ? `EPSG:${lastToken}` : "EPSG:4326";
+};
+
+const reprojectGeometryObject = (
+    geometry = null,
+    sourceProjection = "EPSG:4326",
+    targetProjection = "EPSG:4326"
+) => {
+    const normalizedSourceProjection = normalizeProjectionCode(sourceProjection);
+    const normalizedTargetProjection = normalizeProjectionCode(targetProjection);
+
+    if (!geometry || !normalizedSourceProjection || !normalizedTargetProjection || normalizedSourceProjection === normalizedTargetProjection) {
         return geometry;
     }
 
@@ -27,7 +45,7 @@ const reprojectGeometryObject = (geometry = null, targetProjection = "EPSG:4326"
                 return coordinates;
             }
             if (typeof coordinates[0] === "number" && typeof coordinates[1] === "number") {
-                return transform(coordinates, "EPSG:4326", targetProjection);
+                return transform(coordinates, normalizedSourceProjection, normalizedTargetProjection);
             }
             return coordinates.map(transformCoordinates);
         };
@@ -41,20 +59,24 @@ const reprojectGeometryObject = (geometry = null, targetProjection = "EPSG:4326"
     if (Array.isArray(geometry.geometries)) {
         return {
             ...geometry,
-            geometries: geometry.geometries.map((item) => reprojectGeometryObject(item, targetProjection))
+            geometries: geometry.geometries.map((item) => reprojectGeometryObject(item, normalizedSourceProjection, normalizedTargetProjection))
         };
     }
 
     return geometry;
 };
 
-const parseWktGeometry = (wktValue, targetProjection = "EPSG:4326") => {
+const parseWktGeometry = (
+    wktValue,
+    sourceProjection = "EPSG:4326",
+    targetProjection = "EPSG:4326"
+) => {
     if (!wktValue || typeof wktValue !== "string") {
         return null;
     }
     try {
         const geometry = wktFormat.readGeometry(wktValue);
-        return reprojectGeometryObject(geoJsonFormat.writeGeometryObject(geometry), targetProjection);
+        return reprojectGeometryObject(geoJsonFormat.writeGeometryObject(geometry), sourceProjection, targetProjection);
     } catch (error) {
         return null;
     }
@@ -93,44 +115,49 @@ const toFeature = (featureOrGeometry) => {
     return null;
 };
 
-const parseAreaGeometry = (rawResponse, fallbackWkt, targetProjection = "EPSG:4326") => {
+const parseAreaGeometry = (
+    rawResponse,
+    fallbackWkt,
+    targetProjection = "EPSG:4326",
+    sourceProjection = "EPSG:4326"
+) => {
     if (!rawResponse && fallbackWkt) {
-        return parseWktGeometry(fallbackWkt, targetProjection);
+        return parseWktGeometry(fallbackWkt, sourceProjection, targetProjection);
     }
 
     if (typeof rawResponse === "string") {
-        const parsedWkt = parseWktGeometry(rawResponse, targetProjection);
+        const parsedWkt = parseWktGeometry(rawResponse, sourceProjection, targetProjection);
         if (parsedWkt) {
             return parsedWkt;
         }
         try {
-            return parseAreaGeometry(JSON.parse(rawResponse), fallbackWkt, targetProjection);
+            return parseAreaGeometry(JSON.parse(rawResponse), fallbackWkt, targetProjection, sourceProjection);
         } catch (error) {
-            return parseWktGeometry(fallbackWkt, targetProjection);
+            return parseWktGeometry(fallbackWkt, sourceProjection, targetProjection);
         }
     }
 
     if (Array.isArray(rawResponse)) {
         return rawResponse.length
-            ? parseAreaGeometry(rawResponse[0], fallbackWkt, targetProjection)
-            : parseWktGeometry(fallbackWkt, targetProjection);
+            ? parseAreaGeometry(rawResponse[0], fallbackWkt, targetProjection, sourceProjection)
+            : parseWktGeometry(fallbackWkt, sourceProjection, targetProjection);
     }
 
     if (!rawResponse || typeof rawResponse !== "object") {
-        return parseWktGeometry(fallbackWkt, targetProjection);
+        return parseWktGeometry(fallbackWkt, sourceProjection, targetProjection);
     }
 
     if (rawResponse.type === "FeatureCollection" && Array.isArray(rawResponse.features) && rawResponse.features.length > 0) {
-        return parseAreaGeometry(rawResponse.features[0], fallbackWkt, targetProjection);
+        return parseAreaGeometry(rawResponse.features[0], fallbackWkt, targetProjection, sourceProjection);
     }
     if (rawResponse.type === "Feature") {
-        return rawResponse.geometry || null;
+        return reprojectGeometryObject(rawResponse.geometry || null, sourceProjection, targetProjection);
     }
     if (rawResponse.type && rawResponse.coordinates) {
-        return rawResponse;
+        return reprojectGeometryObject(rawResponse, sourceProjection, targetProjection);
     }
 
-    const wktGeometry = parseWktGeometry(rawResponse.wkt || rawResponse.wtk || rawResponse.WKT, targetProjection);
+    const wktGeometry = parseWktGeometry(rawResponse.wkt || rawResponse.wtk || rawResponse.WKT, sourceProjection, targetProjection);
     if (wktGeometry) {
         return wktGeometry;
     }
@@ -138,19 +165,79 @@ const parseAreaGeometry = (rawResponse, fallbackWkt, targetProjection = "EPSG:43
     const candidateKeys = ["geometry", "areaOfCompetence", "area", "feature", "geojson", "result", "data"];
     for (let index = 0; index < candidateKeys.length; index += 1) {
         const key = candidateKeys[index];
-        const nestedGeometry = parseAreaGeometry(rawResponse[key], fallbackWkt, targetProjection);
+        const nestedGeometry = parseAreaGeometry(rawResponse[key], fallbackWkt, targetProjection, sourceProjection);
         if (nestedGeometry) {
             return nestedGeometry;
         }
     }
 
-    return parseWktGeometry(fallbackWkt, targetProjection);
+    return parseWktGeometry(fallbackWkt, sourceProjection, targetProjection);
 };
 
 export const extractAreaGeometry = parseAreaGeometry;
 
-export const isRestrictedAreaOperationAllowed = ({ operation = "WITHIN", featureGeometry, areaGeometry }) => {
-    const feature = toFeature(featureGeometry);
+export const getGeometryBounds = (geometry = null) => {
+    if (!geometry) {
+        return null;
+    }
+
+    let minx = Infinity;
+    let miny = Infinity;
+    let maxx = -Infinity;
+    let maxy = -Infinity;
+
+    const visitCoordinates = (coordinates) => {
+        if (!Array.isArray(coordinates)) {
+            return;
+        }
+        if (typeof coordinates[0] === "number" && typeof coordinates[1] === "number") {
+            minx = Math.min(minx, coordinates[0]);
+            miny = Math.min(miny, coordinates[1]);
+            maxx = Math.max(maxx, coordinates[0]);
+            maxy = Math.max(maxy, coordinates[1]);
+            return;
+        }
+        coordinates.forEach(visitCoordinates);
+    };
+
+    if (Array.isArray(geometry.coordinates)) {
+        visitCoordinates(geometry.coordinates);
+    }
+
+    if (Array.isArray(geometry.geometries)) {
+        geometry.geometries.forEach((item) => {
+            const childBounds = getGeometryBounds(item);
+            if (!childBounds) {
+                return;
+            }
+            minx = Math.min(minx, childBounds.minx);
+            miny = Math.min(miny, childBounds.miny);
+            maxx = Math.max(maxx, childBounds.maxx);
+            maxy = Math.max(maxy, childBounds.maxy);
+        });
+    }
+
+    if (![minx, miny, maxx, maxy].every(Number.isFinite)) {
+        return null;
+    }
+
+    return { minx, miny, maxx, maxy };
+};
+
+export const isRestrictedAreaOperationAllowed = ({
+    operation = "WITHIN",
+    featureGeometry,
+    areaGeometry,
+    featureProjection = "EPSG:4326",
+    areaProjection = "EPSG:4326"
+}) => {
+    const normalizedAreaProjection = normalizeProjectionCode(areaProjection);
+    const projectedFeatureGeometry = reprojectGeometryObject(
+        featureGeometry,
+        featureProjection,
+        normalizedAreaProjection
+    );
+    const feature = toFeature(projectedFeatureGeometry);
     const area = toFeature(areaGeometry);
     if (!feature || !area) {
         return true;

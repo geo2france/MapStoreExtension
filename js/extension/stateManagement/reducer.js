@@ -52,13 +52,23 @@ export default function panelEditor(state = initialState, action = {}) {
     case PANEL_EDITOR_SET_SELECTED_RESPONSE_INDEX:
         return {
             ...state,
+            editMode: false,
             selectedResponseIndex: Math.max(0, action.index || 0),
-            selectedFeatureIndex: 0
+            selectedFeatureIndex: 0,
+            formValues: {},
+            saveStatus: "idle",
+            saveMessage: "",
+            validationErrors: {}
         };
     case PANEL_EDITOR_SET_SELECTED_FEATURE_INDEX:
         return {
             ...state,
-            selectedFeatureIndex: Math.max(0, action.index || 0)
+            editMode: false,
+            selectedFeatureIndex: Math.max(0, action.index || 0),
+            formValues: {},
+            saveStatus: "idle",
+            saveMessage: "",
+            validationErrors: {}
         };
     case PANEL_EDITOR_SET_FORM_VALUES:
         return {

@@ -9,7 +9,8 @@ import {
 } from "./epics/transactions";
 import {
     evaluateEditPermissionEpic,
-    startEditWithPermissionsEpic
+    startEditWithPermissionsEpic,
+    zoomToRestrictedAreaEpic
 } from "./epics/permissions";
 import { requestFeatureInfoOnMapClickEpic } from "./epics/featureInfo";
 import { loadDescribeFeatureTypeEpic, loadListFieldOptionsEpic } from "./epics/dataLoading";
@@ -19,6 +20,7 @@ export default {
     registerPanelEditorDockPanelEpic,
     handlePanelEditorTransactionEpic,
     startEditWithPermissionsEpic,
+    zoomToRestrictedAreaEpic,
     cancelEditPanelEditorEpic,
     evaluateEditPermissionEpic,
     requestFeatureInfoOnMapClickEpic,
