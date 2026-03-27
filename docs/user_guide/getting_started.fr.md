@@ -121,13 +121,14 @@ Chaque entrée de `auto` accepte le format compact :
 |---:|---|---|---|
 | `0` | `name` | `string` | Nom du champ à renseigner. |
 | `1` | `type` | `string` | Type automatique. Valeurs supportées : `header`, `date`, `area`, `length`, `value`. |
-| `2` | `source` | `string` | Source à utiliser. Pour `header`, chemin à lire dans `security.user`. Pour `date`, format d'affichage souhaité. Pour `value`, valeur fixe à injecter. Inutile pour `area` et `length`. |
+| `2` | `source` | `string` | Source à utiliser. Pour `header`, seules les valeurs `name` et `role` sont documentées, lues depuis `currentUser`. Pour `date`, format d'affichage souhaité. Pour `value`, valeur fixe à injecter. Inutile pour `area` et `length`. |
 
 Règles :
 
 - Un champ déclaré dans `auto` n’est jamais éditable dans le formulaire.
 - Le panneau affiche toujours la dernière valeur connue du champ.
-- Si `type` vaut `header`, la valeur est lue dans les informations utilisateur déjà exposées par MapStore/geOrchestra, selon le chemin indiqué.
+- Si `type` vaut `header`, la valeur est lue dans `currentUser`.
+- Valeurs documentées pour `header` : `name`, `role`.
 - Si `type` vaut `date`, la valeur est remplacée par la date courante à la sauvegarde.
 - Si `type` vaut `value`, la valeur configurée est injectée telle quelle à la sauvegarde.
 - Si `type` vaut `area`, la valeur est calculée à partir de la géométrie de la feature. L’unité par défaut est le mètre carré (`m²`).
@@ -202,7 +203,7 @@ Règles :
         ],
         "auto": [
           ["type_saisie", "value", "manual"],
-          ["log_user_modi", "header", "username"],
+          ["log_user_modi", "header", "name"],
           ["log_date_modi", "date", "DD/MM/YYYY"],
           ["surface_carto", "area"],
           ["longueur_carto", "length"]

@@ -121,13 +121,14 @@ Each `auto` entry accepts compact format:
 |---:|---|---|---|
 | `0` | `name` | `string` | Field name to populate. |
 | `1` | `type` | `string` | Automatic type. Supported values: `header`, `date`, `area`, `length`, `value`. |
-| `2` | `source` | `string` | Source to use. For `header`, path to read from `security.user`. For `date`, desired display format. For `value`, fixed value to inject. Not used for `area` and `length`. |
+| `2` | `source` | `string` | Source to use. For `header`, only `name` and `role` are documented, read from `currentUser`. For `date`, desired display format. For `value`, fixed value to inject. Not used for `area` and `length`. |
 
 Rules:
 
 - A field declared in `auto` is never editable in the form.
 - The panel always displays the last known value.
-- If `type` is `header`, the value is read from user information already exposed by MapStore/geOrchestra, using the configured path.
+- If `type` is `header`, the value is read from `currentUser`.
+- Documented values for `header`: `name`, `role`.
 - If `type` is `date`, the value is replaced with the current date on save.
 - If `type` is `value`, the configured value is injected as-is on save.
 - If `type` is `area`, the value is computed from the feature geometry. Default unit is square meters (`m²`).
@@ -202,7 +203,7 @@ Rules:
         ],
         "auto": [
           ["type_saisie", "value", "manual"],
-          ["log_user_modi", "header", "username"],
+          ["log_user_modi", "header", "name"],
           ["log_date_modi", "date", "DD/MM/YYYY"],
           ["surface_carto", "area"],
           ["longueur_carto", "length"]
