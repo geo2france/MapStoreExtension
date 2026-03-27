@@ -2,6 +2,7 @@ import Rx from "rxjs";
 import { featureInfoClick } from "@mapstore/actions/mapInfo";
 import { CLICK_ON_MAP } from "@mapstore/actions/map";
 import { getLayersList } from "../../utiles/attributes";
+import { setEditMode } from "../actions";
 import { isActive, pluginCfgSelector } from "../selectors";
 
 export const requestFeatureInfoOnMapClickEpic = (action$, store) =>
@@ -18,7 +19,10 @@ export const requestFeatureInfoOnMapClickEpic = (action$, store) =>
                 .filter(Boolean);
 
             if (!configuredLayerNames.length) {
-                return Rx.Observable.of(featureInfoClick(point, layer));
+                return Rx.Observable.of(
+                    setEditMode(false),
+                    featureInfoClick(point, layer)
+                );
             }
 
             const overrideParams = configuredLayerNames.reduce((acc, layerName) => ({
@@ -29,6 +33,7 @@ export const requestFeatureInfoOnMapClickEpic = (action$, store) =>
             }), {});
 
             return Rx.Observable.of(
+                setEditMode(false),
                 featureInfoClick(point, layer || configuredLayerNames[0], configuredLayerNames, overrideParams)
             );
         });
