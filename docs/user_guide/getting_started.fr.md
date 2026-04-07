@@ -55,8 +55,9 @@ Exemple :
 | `allowDelete` | `boolean` | non | Affiche le bouton de suppression uniquement si la valeur est `true`. |
 | `delete` / `deletionRoles` | `string[]` | non | Rôles autorisés à supprimer. |
 | `wfsUrl` | `string` | non | URL WFS spécifique à la couche. |
+| `geoserver` | `string` | non | URL GeoServer de base spécifique à la couche, utilisée pour construire l’endpoint WFS si `wfsUrl` n’est pas défini. |
 | `idField` | `string` | non | Nom du champ identifiant (défaut: `id`). |
-| `restrictedArea` | `object` | non | Restriction spatiale d’édition (zone de compétence) basée sur un `wkt`/`wtk` ou sur le JSON retourné par une `url`. |
+| `restrictedArea` | `object` | non | Restriction spatiale d’édition (zone de compétence) basée sur un `wkt` ou sur le JSON retourné par une `url`. |
 
 ## 3) Configuration par champ (`fields`)
 
@@ -152,7 +153,7 @@ Exemple avec WKT fourni en configuration :
 
 ```json
 "restrictedArea": {
-  "wtk": "POLYGON((...))",
+  "wkt": "POLYGON((...))",
   "operation": "WITHIN"
 }
 ```
@@ -160,16 +161,16 @@ Exemple avec WKT fourni en configuration :
 Clés supportées :
 
 - `url` : URL libre retournant un JSON exploitable par le plugin
-- `wkt` / `wtk` : géométrie fournie directement dans la config
+- `wkt` : géométrie fournie directement dans la config
 - `operation` : `WITHIN`, `INTERSECTS` ou `CONTAINS`
 - `allowedRoles` : rôles qui ignorent cette restriction spatiale
 
 Règles :
 
-- La géométrie de contrôle provient soit du `wkt` / `wtk`, soit du JSON retourné par `url`.
-- Aucun appel HTTP n’est fait si un `wkt` / `wtk` est fourni.
-- Si aucun `url`, `wkt` ou `wtk` n’est fourni, aucune géométrie de contrôle n’est chargée.
-- Le `wkt` / `wtk` est interprété en `EPSG:4326`.
+- La géométrie de contrôle provient soit du `wkt`, soit du JSON retourné par `url`.
+- Aucun appel HTTP n’est fait si un `wkt` est fourni.
+- Si aucun `url` ou `wkt` n’est fourni, aucune géométrie de contrôle n’est chargée.
+- Le `wkt` est interprété en `EPSG:4326`.
 - Si nécessaire, cette géométrie est reprojetée vers le CRS des features Identify avant la comparaison spatiale.
 - Si la comparaison spatiale échoue pour l’opération configurée, l’interface affiche un bouton d’état `record` avec une tooltip métier.
 - Si l’utilisateur possède un rôle présent dans `allowedRoles`, la restriction spatiale est ignorée.

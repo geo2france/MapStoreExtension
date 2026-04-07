@@ -287,13 +287,14 @@
           "icon": "list-alt",
           "iconByContext": {},
           "title": "Attributs",
-          "geoserver": "http://localhost/geoserver",
+          "serverUrl": "http://localhost/geoserver",
           "layers": {
             "test:avis_urbanisme": {
               "allowDelete": false,
               "featureFieldLabel": "libelle"
             },
             "test:avisee_projets": {
+              "serverUrl": "",
               "allowDelete": false,
               "allowEdit": true,
               "featureFieldLabel": "nom",

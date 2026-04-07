@@ -316,7 +316,7 @@ export const getWfsUrl = (pluginConfig = {}, layerConfig = {}) => {
         return explicitWfsUrl;
     }
 
-    const geoserver = pluginConfig?.geoserver;
+    const geoserver = layerConfig?.geoserver || pluginConfig?.geoserver;
     if (!geoserver) {
         return null;
     }
