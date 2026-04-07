@@ -2,7 +2,7 @@ import axios from "@mapstore/libs/ajax";
 
 export const getAreaOfCompetence = (source = {}) => {
     const restrictedAreaSource = typeof source === "string" ? { url: source } : (source || {});
-    const fallbackWkt = restrictedAreaSource?.wkt || restrictedAreaSource?.wtk;
+    const fallbackWkt = restrictedAreaSource?.wkt;
 
     if (fallbackWkt) {
         return Promise.resolve(fallbackWkt);
