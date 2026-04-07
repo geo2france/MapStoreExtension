@@ -316,14 +316,14 @@ export const getWfsUrl = (pluginConfig = {}, layerConfig = {}) => {
         return explicitWfsUrl;
     }
 
-    const geoserver = layerConfig?.geoserver || pluginConfig?.geoserver;
-    if (!geoserver) {
+    const serverUrl = layerConfig?.serverUrl || pluginConfig?.serverUrl;
+    if (!serverUrl) {
         return null;
     }
 
-    const base = geoserver.startsWith("http://") || geoserver.startsWith("https://")
-        ? geoserver
-        : `https://${geoserver}`;
+    const base = serverUrl.startsWith("http://") || serverUrl.startsWith("https://")
+        ? serverUrl
+        : `https://${serverUrl}`;
     const normalizedBase = base.replace(/\/+$/, "");
 
     // Normalize common geoserver base URL variants to a canonical WFS endpoint.

@@ -11,8 +11,8 @@ La configuration se fait dans `localConfig.json` sous le plugin `panel_editor`.
 | `icon` | `string` | non | Icône MapStore (`Glyphicon`) par défaut. |
 | `iconByContext` | `object` | non | Surcharge de l’icône selon le contexte courant. Les clés peuvent être l’identifiant ou le nom du contexte, avec une clé optionnelle `default`. |
 | `size` | `number` | non | Largeur de base du panneau (le plugin ajoute +100 px). |
-| `geoserver` | `string` | non | URL GeoServer de base (fallback pour WFS). |
-| `wfsUrl` | `string` | non | URL WFS globale (prioritaire sur `geoserver`). |
+| `serverUrl` | `string` | non | URL de base du serveur cartographique (fallback pour WFS). |
+| `wfsUrl` | `string` | non | URL WFS globale (prioritaire sur `serverUrl`). |
 | `layers` | `object` | oui | Dictionnaire des règles par couche (`workspace:layer`). |
 
 ### Icône du bouton par contexte
@@ -55,7 +55,7 @@ Exemple :
 | `allowDelete` | `boolean` | non | Affiche le bouton de suppression uniquement si la valeur est `true`. |
 | `delete` / `deletionRoles` | `string[]` | non | Rôles autorisés à supprimer. |
 | `wfsUrl` | `string` | non | URL WFS spécifique à la couche. |
-| `geoserver` | `string` | non | URL GeoServer de base spécifique à la couche, utilisée pour construire l’endpoint WFS si `wfsUrl` n’est pas défini. |
+| `serverUrl` | `string` | non | URL de base du serveur cartographique spécifique à la couche, utilisée pour construire l’endpoint WFS si `wfsUrl` n’est pas défini. |
 | `idField` | `string` | non | Nom du champ identifiant (défaut: `id`). |
 | `restrictedArea` | `object` | non | Restriction spatiale d’édition (zone de compétence) basée sur un `wkt` ou sur le JSON retourné par une `url`. |
 
@@ -190,7 +190,7 @@ Règles :
       "default": "map"
     },
     "size": 420,
-    "geoserver": "http://localhost/geoserver",
+    "serverUrl": "http://localhost/geoserver",
     "layers": {
       "test:avisee_projets": {
         "featureFieldLabel": "nom",
