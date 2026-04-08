@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { FormControl } from "react-bootstrap";
+import "../css/panelEditor.css";
 
 /**
  * Normalizes primitive options into `{ value, label }` pairs.
@@ -30,7 +31,7 @@ const SelectInputControl = ({ value, options, includeEmptyOption, onChange, disa
         {(Array.isArray(options) ? options : []).map((option) => {
             const normalizedOption = normalizeOption(option);
             return (
-                <option key={normalizedOption.value} value={normalizedOption.value}>
+                <option className="panel-editor-header-option" key={normalizedOption.value} value={normalizedOption.value}>
                     {normalizedOption.label}
                 </option>
             );

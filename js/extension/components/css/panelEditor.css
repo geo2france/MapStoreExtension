@@ -70,6 +70,10 @@
     flex-shrink: 0;
 }
 
+.panel-editor-header-option {
+    background-color: white !important;
+}
+
 .panel-editor-mode-title {
     margin: 0;
 }
