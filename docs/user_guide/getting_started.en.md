@@ -11,7 +11,7 @@ Configuration is defined in `localConfig.json` under the `panel_editor` plugin.
 | `icon` | `string` | no | Default MapStore icon (`Glyphicon`). |
 | `iconByContext` | `object` | no | Icon override based on the current context. Keys can be the context id or context name, with an optional `default` key. |
 | `size` | `number` | no | Base panel width (plugin adds +100 px). |
-| `serverUrl` | `string` | no | Base cartographic server URL (WFS fallback). |
+| `serverUrl` | `string` | no | Base GeoServer URL (WFS fallback). |
 | `wfsUrl` | `string` | no | Global WFS URL (higher priority than `serverUrl`). |
 | `layers` | `object` | yes | Per-layer rules (`workspace:layer`). |
 
@@ -55,7 +55,6 @@ Example:
 | `allowDelete` | `boolean` | no | Shows the delete button only when set to `true`. |
 | `delete` / `deletionRoles` | `string[]` | no | Roles allowed to delete. |
 | `wfsUrl` | `string` | no | Layer-specific WFS URL. |
-| `serverUrl` | `string` | no | Layer-specific cartographic server URL used to build the WFS endpoint when `wfsUrl` is not set. |
 | `idField` | `string` | no | Identifier field name (default: `id`). |
 | `restrictedArea` | `object` | no | Spatial edit restriction (area of competence) based on either a `wkt` or the JSON returned by a `url`. |
 

@@ -2,7 +2,9 @@
 
 The `panel_editor` plugin adds a right-side panel.
 
-![sidebar location](images/main-toolbar.png)
+To open it, just click on th plugin's icon into sideBarMenu :
+
+![sidebar location](../images/toolbar-tooltip.png)
 
 ## User flow
 
@@ -10,10 +12,13 @@ The `panel_editor` plugin adds a right-side panel.
 2. Click on the map to select a feature (identify).
 3. Select the layer (if multiple responses) and the feature.
 4. Read visible attributes in read mode.
+
+![general image](../images/read-mode.png)
+
 5. Switch to edit mode with the pencil button (according to user role and restricted area).
 6. Save, cancel, or delete according to permissions.
 
-![read mode](images/write-mode.png)
+![read mode](../images/write-mode.png)
 
 
 ## UI behavior

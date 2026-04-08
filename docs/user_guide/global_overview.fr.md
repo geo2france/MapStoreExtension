@@ -2,7 +2,9 @@
 
 Le plugin `panel_editor` ajoute un panneau latéral droit.
 
-![sidebar location](images/main-toolbar.png)
+Pour y accéder, il faut cliquer sur le bouton localisé dans la barre d'outils:
+
+![sidebar location](../images/toolbar-tooltip.png)
 
 ## Parcours utilisateur
 
@@ -10,10 +12,14 @@ Le plugin `panel_editor` ajoute un panneau latéral droit.
 2. Cliquer sur la carte pour lancer l’identification des entités.
 3. Choisir la couche (si plusieurs réponses) puis l’entité.
 4. Consulter les champs visibles en mode lecture.
+
+![general image](../images/read-mode.png)
+
+
 5. Passer en mode édition avec le bouton stylo.
 6. Sauvegarder, annuler ou supprimer selon les droits.
 
-![read mode](images/write-mode.png)
+![read mode](../images/write-mode.png)
 
 ## Comportement de l’interface
 
